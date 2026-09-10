@@ -11,7 +11,7 @@ import {
 	loadPackageModule,
 } from "./load-config.ts";
 import { shironesOverlay } from "./overlay.ts";
-import { normalisePath, resolvePaths } from "./paths.ts";
+import { normalisePath, outsideRootGuard, resolvePaths } from "./paths.ts";
 import { buildOverrideRegistry, createOverlayTargets, type OverrideRegistryRef } from "./registry.ts";
 import { collectRoutes, filterRoutes } from "./routes.ts";
 import { shironesSsrNodeShims } from "./ssr-node-shims.ts";
@@ -267,6 +267,20 @@ export function shirones(options: ShironesOptions = {}): AstroIntegration {
 					integrations,
 					markdown: { processor: processor as never },
 					vite: {
+						server: {
+							watch: {
+								ignored: [
+									// Protected Windows directories: chokidar climbs to the
+									// drive root and scans them, and the resulting EINVAL is
+									// not swallowed by `ignorePermissionErrors`.
+									"**/System Volume Information/**",
+									"**/$RECYCLE.BIN/**",
+									"**/Recovery/**",
+									"**/Config.Msi/**",
+									outsideRootGuard(paths.projectRoot),
+								],
+							},
+						},
 						resolve: { alias: createAliases(paths) },
 						plugins: [
 							shironesOverlay({

@@ -79,6 +79,31 @@ const iconifyOfflineFunctionsPath = fileURLToPath(
 	new URL("./node_modules/@iconify/svelte/dist/offline-functions.js", import.meta.url),
 );
 
+/**
+ * 项目根目录（小写、去掉尾斜杠），用于把 dev 的文件监听钉死在项目内。
+ *
+ * chokidar 在每次 `add()` 成功后会把父目录也 `add()` 进去（为了让父目录能感知删除/重命名），
+ * 于是监听范围会沿目录树逐级向上爬：项目根 → `E:\jisuanji\PycharmProjects` → `E:\jisuanji` → `E:\`。
+ * 爬到盘符根后它会递归扫描整个盘，撞上 `System Volume Information` 这类受保护目录时
+ * `lstat` 返回 EINVAL；该错误码不属于 `ignorePermissionErrors` 覆盖的 EPERM/EACCES，
+ * chokidar 直接 `emit('error')`，而 Vite 没有注册 error handler，最终进程崩溃退出。
+ */
+const projectRoot = fileURLToPath(new URL(".", import.meta.url))
+	.replace(/\\/g, "/")
+	.toLowerCase()
+	.replace(/\/+$/, "");
+
+/** 判断一个监听候选路径是否落在项目根之外。 */
+function isOutsideProjectRoot(candidate) {
+	const normalized = String(candidate)
+		.replace(/\\/g, "/")
+		.toLowerCase()
+		.replace(/\/+$/, "");
+	return (
+		normalized !== projectRoot && !normalized.startsWith(`${projectRoot}/`)
+	);
+}
+
 function resolveVariantSrc(file) {
 	if (isBuildCommand && resolvedFontOptions.subsetting?.enable) {
 		const ext = extname(file);
@@ -252,6 +277,20 @@ export default defineConfig({
 		processor: siteMarkdownProcessor,
 	},
 	vite: {
+		server: {
+			watch: {
+				ignored: [
+					// Windows 受保护的系统目录：chokidar 沿目录树向上爬到盘符根后会扫到它们，
+					// lstat 返回 EINVAL 且不被 ignorePermissionErrors 覆盖，会直接终止进程。
+					"**/System Volume Information/**",
+					"**/$RECYCLE.BIN/**",
+					"**/Recovery/**",
+					"**/Config.Msi/**",
+					// 把监听范围钉死在项目根内，从源头阻止向上爬升。
+					isOutsideProjectRoot,
+				],
+			},
+		},
 		resolve: {
 			alias: [
 				{

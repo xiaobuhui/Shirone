@@ -89,3 +89,26 @@ export function resolvePaths(
 export function normalisePath(value: string): string {
 	return value.replace(/\\/g, "/");
 }
+
+/**
+ * Build a chokidar `ignored` predicate that keeps dev-server file watching
+ * inside `projectRoot`.
+ *
+ * chokidar re-adds the parent directory after every successful `add()`, so the
+ * watch scope climbs the directory tree: project root -> ... -> drive root. Once
+ * it reaches `E:\` it scans the whole drive, and `lstat` on protected
+ * directories such as `System Volume Information` fails with EINVAL. That code
+ * is not covered by `ignorePermissionErrors` (EPERM/EACCES only), so chokidar
+ * emits an unhandled `error` event and the dev server process exits.
+ */
+export function outsideRootGuard(
+	projectRoot: string,
+): (candidate: string) => boolean {
+	const root = normalisePath(projectRoot).toLowerCase().replace(/\/+$/, "");
+	return (candidate: string) => {
+		const normalised = normalisePath(String(candidate))
+			.toLowerCase()
+			.replace(/\/+$/, "");
+		return normalised !== root && !normalised.startsWith(`${root}/`);
+	};
+}
