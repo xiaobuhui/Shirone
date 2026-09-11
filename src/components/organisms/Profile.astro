@@ -24,6 +24,20 @@ const style = Astro.props.style;
 const priority = Astro.props.priority ?? false;
 
 const config = profileConfig;
+
+/**
+ * 社交链接的 href 与站内外判定。
+ * - href 统一过 `url()`：站内路径自动带上 `base` 前缀，http(s) 外链原样透传；
+ * - 站内链接（如占位页 `/wip/`）交给 Swup 走同页过渡，不加 `target` / `rel`；
+ *   只有 http(s) 外链才新开标签页并声明 `rel="me"`。
+ * 外链判定写法与 Announcement.astro 保持一致。
+ */
+const socialLinks = config.links.map((item) => ({
+	...item,
+	href: url(item.url),
+	isExternal: /^https?:\/\//i.test(item.url),
+}));
+
 const avatarAsset = await resolveImageAsset(config.avatar ?? "");
 let avatarUrl = typeof avatarAsset === "string" ? avatarAsset : avatarAsset.src;
 let avatarSrcset: string | undefined;
@@ -85,17 +99,17 @@ if (typeof avatarAsset !== "string") {
         <div class="h-1 w-5 bg-[var(--primary)] mx-auto rounded-full mb-2 transition"></div>
         <div class="text-center text-50 mb-2.5 transition">{config.bio}</div>
         <div class="flex flex-wrap gap-2 justify-center mb-1">
-            {config.links.length > 1 && config.links.map(item =>
+            {socialLinks.length > 1 && socialLinks.map((item) =>
                 <Tooltip label={item.name} placement="top" client:load>
-                    <IconButton href={item.url} target="_blank" rel="me" label={item.name}>
+                    <IconButton href={item.href} target={item.isExternal ? "_blank" : undefined} rel={item.isExternal ? "me" : undefined} label={item.name}>
                         <Icon name={item.icon} class="text-[1.5rem]"></Icon>
                     </IconButton>
                 </Tooltip>
             )}
-            {config.links.length == 1 && <Button href={config.links[0].url} target="_blank" ariaLabel={config.links[0].name}
+            {socialLinks.length == 1 && <Button href={socialLinks[0].href} target={socialLinks[0].isExternal ? "_blank" : undefined} ariaLabel={socialLinks[0].name}
                                                  variant="text" size="small" class="!px-3 !font-bold !text-[var(--on-surface)]">
-                <Icon name={config.links[0].icon} class="text-[1.5rem]"></Icon>
-                {config.links[0].name}
+                <Icon name={socialLinks[0].icon} class="text-[1.5rem]"></Icon>
+                {socialLinks[0].name}
             </Button>}
         </div>
         <UmamiStats variant="profile" />
