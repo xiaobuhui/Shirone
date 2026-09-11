@@ -1,0 +1,46 @@
+---
+/**
+ * 占位页 `/wip/` —— 「站长还未制作」，用于把尚未做的页面统一指过来。
+ *
+ * 文案全部来自内容仓 `content/spec/wip.md`：页面标题取正文里的第一个一级标题，
+ * 因此本组件不含任何硬编码的用户可见文案（i18n 约定见根 `AGENTS.md`）。
+ * 内容缺失时抛出错误，与同样读取 spec 集合的 `about.astro` 保持一致。
+ */
+import { getEntry, render } from "astro:content";
+import Card from "@components/atoms/display/Card.svelte";
+import Markdown from "@components/content/Markdown.astro";
+import { getMarkdownStylesheetAssets } from "@utils/markdown-assets";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+const wipEntry = await getEntry("spec", "wip");
+
+if (!wipEntry) {
+	throw new Error(
+		"WIP page content not found: expected content/spec/wip.md in the content repository",
+	);
+}
+
+const { Content, headings, remarkPluginFrontmatter } = await render(wipEntry);
+const markdownStylesheetAssets = await getMarkdownStylesheetAssets(
+	remarkPluginFrontmatter.markdownSyntaxes,
+);
+
+/**
+ * 一级标题即页面标题；缺失时不传 title，由布局回退到站点标题（不硬编码文案）。
+ * 末尾的 `#` 是标题锚点链接混入的文本（与 SidebarTOC 的处理一致）。
+ */
+const pageTitle = headings
+	.find((heading) => heading.depth === 1)
+	?.text.replace(/#+$/, "")
+	.trim();
+---
+<MainGridLayout title={pageTitle} description={pageTitle} page="wip">
+    {markdownStylesheetAssets.map(({ pack, css }) => <style is:inline slot="head" data-swup-optional={pack} set:html={css}></style>)}
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+        <Card color="var(--card-bg)" radius="l" class="z-10 px-9 py-6 relative w-full">
+            <Markdown class="mt-2">
+                <Content />
+            </Markdown>
+        </Card>
+    </div>
+</MainGridLayout>
