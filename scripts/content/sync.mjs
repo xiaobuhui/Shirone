@@ -54,12 +54,15 @@ const SKIPPED_DIRECTORIES = new Set([".git", "node_modules"]);
 const NON_CONTENT_DIRECTORIES = new Set([
 	".git",
 	".github",
+	".idea",
 	".vscode",
 	CONFIG_DIRECTORY,
 	"docs",
 	"node_modules",
 	"scripts",
 	"templates",
+	// 内容仓里的个人工作日历/笔记目录（本地约定，不参与物化）。
+	"小不悔个人博客改造",
 ]);
 
 const args = new Set(process.argv.slice(2));
