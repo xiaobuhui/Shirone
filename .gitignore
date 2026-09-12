@@ -20,8 +20,11 @@ yarn-error.log*
 pnpm-debug.log*
 
 # environment variables
+# 用通配覆盖 .env / .env.local / .env.production 等所有本地覆盖文件；
+# .env.example 是给使用者的模板，必须提交，所以显式放行。
 .env
-.env.production
+.env.*
+!.env.example
 
 # macOS-specific files
 .DS_Store

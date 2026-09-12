@@ -10,7 +10,7 @@ A calm reading space for long-form writing, personal collections, and the small 
 
 [Live demo](https://shirone.mysqil.com/) · [Documentation](https://docs.shirone.mysqil.com/) · [Report an issue](https://github.com/LyraVoid/Shirone/issues)
 
-[English](./README.md) · [简体中文](./README.zh-CN.md) · [繁體中文](./README.zh-TW.md) · [日本語](./README.ja.md)
+[English](./README.md) · [简体中文](./README.zh-CN.md)
 
 ![Node.js >= 22.12](https://img.shields.io/badge/Node.js-%3E%3D22.12-5FA04E?logo=nodedotjs&logoColor=white)
 ![pnpm 9](https://img.shields.io/badge/pnpm-9-F69220?logo=pnpm&logoColor=white)
@@ -91,6 +91,32 @@ pnpm dev
 Open `http://localhost:4321` in your browser.
 
 On Windows PowerShell installations where script execution is restricted, use `pnpm.cmd` and `npx.cmd` instead.
+
+### Using a separate content repository (dual-repo)
+
+The single-repo flow above keeps posts and the theme in one repository. If your content lives in its own repository (content is usually private, the theme repo can stay public), point the theme at it — pick one of three ways:
+
+| Method | How | Best for |
+| --- | --- | --- |
+| **Manifest file** (recommended) | set `source.path` in `shirone.content.json` | The path travels with the repo; nothing to reconfigure on another machine |
+| **`.env` file** | `CONTENT_DIR="G:/Code/Blog/shirone-content"` | The path is machine-specific and should stay out of version control |
+| **Current terminal** | `$env:CONTENT_DIR = "G:/Code/Blog/shirone-content"` | Temporarily switching to another content repository |
+
+Precedence is "process environment > `.env.local` > `.env` > `shirone.content.json`".
+
+Once configured, use two terminals to write and preview at the same time:
+
+```powershell
+# Terminal 1 — dev server
+pnpm.cmd dev
+```
+
+```powershell
+# Terminal 2 — watch the content repo; save, sync, hot reload
+pnpm.cmd content:watch
+```
+
+`SHIRONE_CONTENT_SYNC=0` temporarily falls back to single-repo mode; run `pnpm.cmd content:status` at any time to see which content source is actually in use. See the [content separation guide](./docs/content-separation/README.md) for the full picture.
 
 ### Use the npm package
 

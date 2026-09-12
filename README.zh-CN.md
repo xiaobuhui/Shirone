@@ -10,7 +10,7 @@
 
 [在线预览](https://shirone.mysqil.com/) · [项目文档](https://docs.shirone.mysqil.com/) · [反馈问题](https://github.com/LyraVoid/Shirone/issues)
 
-[English](./README.md) · [简体中文](./README.zh-CN.md) · [繁體中文](./README.zh-TW.md) · [日本語](./README.ja.md)
+[English](./README.md) · [简体中文](./README.zh-CN.md)
 
 ![Node.js >= 22.12](https://img.shields.io/badge/Node.js-%3E%3D22.12-5FA04E?logo=nodedotjs&logoColor=white)
 ![pnpm 9](https://img.shields.io/badge/pnpm-9-F69220?logo=pnpm&logoColor=white)
@@ -87,6 +87,32 @@ pnpm dev
 在浏览器中打开 `http://localhost:4321`。
 
 如果 Windows PowerShell 的脚本执行策略阻止运行命令，请改用 `pnpm.cmd` 和 `npx.cmd`。
+
+### 使用独立内容仓库（双仓模式）
+
+上面的单仓流程把文章和主题放在同一个仓库里。如果你把内容拆到了独立仓库（内容仓通常设为私有，主题仓可以保持公开），需要先告诉主题去哪找内容——三选一：
+
+| 方式 | 写法 | 适合 |
+| --- | --- | --- |
+| **清单文件**（推荐） | 在 `shirone.content.json` 中写 `source.path` | 路径随仓库走，换机器不用重设 |
+| **`.env` 文件** | `CONTENT_DIR="G:/Code/Blog/shirone-content"` | 路径是本机私有的，不想进版本库 |
+| **当前终端** | `$env:CONTENT_DIR = "G:/Code/Blog/shirone-content"` | 临时切到另一个内容仓 |
+
+优先级为「进程环境变量 > `.env.local` > `.env` > `shirone.content.json`」。
+
+配置好后开两个终端，就能边写边看：
+
+```powershell
+# 终端 1：启动预览
+pnpm.cmd dev
+```
+
+```powershell
+# 终端 2：监听内容仓，保存即同步并热重载
+pnpm.cmd content:watch
+```
+
+`SHIRONE_CONTENT_SYNC=0` 可临时回到单仓模式；`pnpm.cmd content:status` 可随时确认当前实际用的是哪个内容源。完整说明见[内容分离指南](./docs/content-separation/README.md)。
 
 ### 使用 npm 包
 

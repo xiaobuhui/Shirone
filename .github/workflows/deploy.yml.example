@@ -9,7 +9,7 @@
 #   3. 替换最后的「Deploy」一步为你的平台命令（文件末尾给了四种常见写法）；
 #   4. 在仓库 Settings > Secrets and variables > Actions 配置所需凭据。
 #
-# 前置条件见 docs/content-separation.md。
+# 前置条件见 docs/content-separation/README.md。
 
 name: Deploy
 
