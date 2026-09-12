@@ -249,6 +249,7 @@ export const vi: Translation = {
 	[Key.paginationPage]: "Trang {page}",
 	[Key.paginationJump]: "Đi tới trang",
 	[Key.tagsViewAll]: "Xem tất cả thẻ",
+	[Key.momentsViewAll]: "Xem tất cả khoảnh khắc",
 
 	[Key.author]: "Tác giả",
 	[Key.publishedAt]: "Đăng vào lúc",

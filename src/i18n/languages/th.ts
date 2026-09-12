@@ -238,6 +238,7 @@ export const th: Translation = {
 	[Key.paginationPage]: "หน้า {page}",
 	[Key.paginationJump]: "ไปที่หน้า",
 	[Key.tagsViewAll]: "ดูแท็กทั้งหมด",
+	[Key.momentsViewAll]: "ดูโมเมนต์ทั้งหมด",
 
 	[Key.author]: "ผู้เขียน",
 	[Key.publishedAt]: "เผยแพร่เมื่อ",

@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
  * 官方 Chips 筛选原子、PostCard 风格卡片（hover 箭头 + #tag 弱文本标签）、
  * 筛选状态 URL 同步（?q= / ?tag=）。
  * 数据来自 src/data/friends.ts（getFriendsList 稳定顺序），断言基于默认数据集；
- * 站点默认语言为 en（siteConfig.lang），文案断言用英文。
+ * 站点语言 zh_CN（siteConfig.lang），文案/标签断言与 zh_CN 及内容仓 data/friends.ts 保持一致。
  */
 
 const FRIEND_COUNT = 3;
@@ -23,17 +23,17 @@ test.describe("友链页", () => {
 		await expect(first).toHaveAttribute("target", "_blank");
 		await expect(first).toContainText("Mizuki");
 		await expect(first).toContainText(
-			"Another Fuwari-based blog theme with docs",
+			"另一款基于 Fuwari 的博客主题，带文档",
 		);
 		await expect(first.locator(".friend-card__tag").first()).toHaveText(
-			"#Blog",
+			"#博客",
 		);
 	});
 
 	test("使用站点统一的友链视觉结构", async ({ page }) => {
 		// PageHeader 封装的大标题（带装饰图标）
 		await expect(page.locator(".page-header")).toHaveCount(1);
-		await expect(page.locator(".page-header__title")).toHaveText("Friends");
+		await expect(page.locator(".page-header__title")).toHaveText("友链");
 		await expect(page.locator(".page-header__icon svg")).toHaveCount(1);
 		// PostCard 式箭头（chevron，hover 右滑）
 		await expect(page.locator(".friend-card__arrow")).toHaveCount(FRIEND_COUNT);
@@ -44,23 +44,23 @@ test.describe("友链页", () => {
 		// 换链说明为 PageHeader 副标题
 		await expect(page.locator(".page-header__subtitle")).toBeVisible();
 		await expect(page.locator(".page-header__subtitle")).toContainText(
-			"Link exchange",
+			"交换友链",
 		);
 	});
 
 	test("筛选状态同步到 URL（?q= / ?tag=）", async ({ page }) => {
 		await page.locator(".friend-section__search input").fill("Mizuki");
 		await expect(page).toHaveURL(/[?&]q=Mizuki/);
-		await page.getByRole("button", { name: "Blog", exact: true }).click();
-		await expect(page).toHaveURL(/[?&]tag=Blog/);
+		await page.getByRole("button", { name: "博客", exact: true }).click();
+		await expect(page).toHaveURL(/[?&]tag=%E5%8D%9A%E5%AE%A2/);
 		await page.locator(".friend-section__search input").fill("");
-		await expect(page).toHaveURL(/[?&]tag=Blog/);
+		await expect(page).toHaveURL(/[?&]tag=%E5%8D%9A%E5%AE%A2/);
 	});
 
 	test("单选标签筛选（再点取消恢复全部，aria-pressed 同步）", async ({
 		page,
 	}) => {
-		const blogFilter = page.getByRole("button", { name: "Blog", exact: true });
+		const blogFilter = page.getByRole("button", { name: "博客", exact: true });
 		await blogFilter.click();
 		await expect(blogFilter).toHaveAttribute("aria-pressed", "true");
 		await expect(page.locator(".friend-card")).toHaveCount(1);
@@ -97,7 +97,7 @@ test.describe("友链页 Swup 导航", () => {
 			);
 
 			const blogFilter = page.getByRole("button", {
-				name: "Blog",
+				name: "博客",
 				exact: true,
 			});
 			await blogFilter.click();

@@ -9,15 +9,15 @@ import { expect, test } from "@playwright/test";
  * 分组标题与瓷砖均用站内既有语言（SectionTitle + card-bg 竖向卡），不引入额外装置。
  * 数据来自 src/data/compass.ts（本地数据源，4 组 / 11 条），
  * 覆盖「有 icon / 无 icon / 有 note / 无 note」四种形态；
- * 演示数据为纯英文（站点默认语言 en）；站点文案断言用英文，分组名来自数据。
+ * 演示数据已中文化（站点语言 zh_CN）；分组名/文案断言与 zh_CN 及内容仓 data/compass.ts 保持一致。
  */
 
 const SHELF_KEYS = ["dev", "design", "tools", "reads"];
 const SHELF_NAMES: Record<string, string> = {
-	dev: "Development",
-	design: "Design",
-	tools: "Tools",
-	reads: "Reading",
+	dev: "开发",
+	design: "设计",
+	tools: "工具",
+	reads: "阅读",
 };
 const SHELF_TILE_COUNTS: Record<string, number> = {
 	dev: 3,
@@ -84,7 +84,7 @@ test.describe("站点罗盘页", () => {
 		await expect(noIcon.locator(".compass-tile__icon svg")).toHaveCount(0);
 		// 计数行
 		await expect(page.locator(".compass-section__count")).toHaveText(
-			"11 sites",
+			"11 个站点",
 		);
 	});
 
@@ -92,7 +92,7 @@ test.describe("站点罗盘页", () => {
 		page,
 	}) => {
 		const designChip = page.getByRole("button", {
-			name: "Design",
+			name: "设计",
 			exact: true,
 		});
 		// 选中 → 三段过渡（contained 指示器展示后淡出），收敛后只剩该组 + aria-pressed + URL 同步
@@ -118,7 +118,7 @@ test.describe("站点罗盘页", () => {
 	test("深链恢复筛选（?group=tools）与未知分组空态", async ({ page }) => {
 		await page.goto("/compass/?group=tools");
 		await expect(
-			page.getByRole("button", { name: "Tools", exact: true }),
+			page.getByRole("button", { name: "工具", exact: true }),
 		).toHaveAttribute("aria-pressed", "true");
 		await expect(page.locator(".compass-tile")).toHaveCount(2);
 		await expect(page.locator(".compass-tile__label").first()).toHaveText(
@@ -128,7 +128,7 @@ test.describe("站点罗盘页", () => {
 		await page.goto("/compass/?group=nonsense");
 		await expect(page.locator(".compass-section__empty")).toBeVisible();
 		await expect(page.locator(".compass-section__empty")).toContainText(
-			"No sites matched your search",
+			"没有符合条件的站点",
 		);
 	});
 
@@ -146,8 +146,8 @@ test.describe("站点罗盘页", () => {
 		await search.fill("");
 		await expect(page.locator(".compass-tile")).toHaveCount(ENTRY_COUNT);
 		await expect(page).not.toHaveURL(/q=/);
-		// note 命中（Regex testing & debugging → Regex101）
-		await search.fill("regex");
+		// note 命中（正则测试与调试 → Regex101）
+		await search.fill("正则");
 		await expect(page.locator(".compass-tile")).toHaveCount(1);
 		await expect(page.locator(".compass-tile__label")).toHaveText("Regex101");
 	});
@@ -169,7 +169,7 @@ test.describe("站点罗盘页", () => {
 		await expect(page.locator(".compass-tile")).toHaveCount(0);
 		await expect(page.locator(".compass-section__empty")).toBeVisible();
 		await expect(page.locator(".compass-section__empty")).toContainText(
-			"No sites matched your search",
+			"没有符合条件的站点",
 		);
 	});
 

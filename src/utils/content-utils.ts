@@ -1,4 +1,5 @@
 ﻿import { type CollectionEntry, getCollection } from "astro:content";
+import { categoryConfig } from "@/config/categoryConfig";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import {
@@ -109,7 +110,23 @@ export async function getCategoryList(): Promise<Category[]> {
 		count[categoryName] = count[categoryName] ? count[categoryName] + 1 : 1;
 	});
 
+	// 展示顺序：`categoryConfig.order` 里列出的分类按数组顺序靠前，
+	// 其余按字母序跟在后面；order 为空/省略时等价于纯字母序（主题默认行为）。
+	const categoryRank = new Map<string, number>();
+	for (const [index, raw] of (categoryConfig.order ?? []).entries()) {
+		const key = raw.trim();
+		if (key && !categoryRank.has(key)) categoryRank.set(key, index);
+	}
+
 	const lst = Object.keys(count).sort((a, b) => {
+		const rankA = categoryRank.get(a);
+		const rankB = categoryRank.get(b);
+		// 只要有一方在 order 里，就按 order 排（在 order 里的全部靠前）
+		if (rankA !== undefined || rankB !== undefined) {
+			if (rankA === undefined) return 1;
+			if (rankB === undefined) return -1;
+			return rankA - rankB;
+		}
 		return a.toLowerCase().localeCompare(b.toLowerCase());
 	});
 

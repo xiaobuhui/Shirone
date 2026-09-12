@@ -250,6 +250,7 @@ export const id: Translation = {
 	[Key.paginationPage]: "Halaman {page}",
 	[Key.paginationJump]: "Lompat ke halaman",
 	[Key.tagsViewAll]: "Lihat semua tag",
+	[Key.momentsViewAll]: "Lihat semua momen",
 
 	[Key.author]: "Penulis",
 	[Key.publishedAt]: "Diterbitkan pada",

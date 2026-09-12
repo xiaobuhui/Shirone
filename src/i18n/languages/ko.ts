@@ -246,6 +246,7 @@ export const ko: Translation = {
 	[Key.paginationPage]: "{page} 페이지",
 	[Key.paginationJump]: "페이지로 이동",
 	[Key.tagsViewAll]: "모든 태그 보기",
+	[Key.momentsViewAll]: "모든 모먼트 보기",
 
 	[Key.author]: "저자",
 	[Key.publishedAt]: "게시일",

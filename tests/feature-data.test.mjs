@@ -52,11 +52,11 @@ describe("Feature Data & Resolver Tests", () => {
 			enable: true,
 			categories: [],
 			order: "asc",
-			disabledTitles: ["Senior Frontend Engineer"],
+			disabledTitles: ["资深前端工程师"],
 		};
 		const resolved = resolveTimelineData(config);
-		assert.ok(!resolved.some((t) => t.title === "Senior Frontend Engineer"));
-		assert.equal(resolved[0].title, "Started Personal Blog & Tech Notes");
+		assert.ok(!resolved.some((t) => t.title === "资深前端工程师"));
+		assert.equal(resolved[0].title, "开始写个人博客与技术笔记");
 	});
 
 	it("resolveDevicesData applies disabledIds correctly", () => {

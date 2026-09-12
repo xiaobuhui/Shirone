@@ -14,13 +14,13 @@ test.describe("技能页", () => {
 			"data-current-page",
 			"skills",
 		);
-		await expect(page.locator(".page-header__title")).toHaveText("Skills");
+		await expect(page.locator(".page-header__title")).toHaveText("技能");
 		await expect(page.locator(".skills-section__count")).toHaveText(
-			"21 skills",
+			"21 项技能",
 		);
 
 		const typescript = page.locator(".skill-card", { hasText: "TypeScript" });
-		await expect(typescript).toContainText("Expert");
+		await expect(typescript).toContainText("精通");
 		await expect(typescript.getByRole("meter")).toHaveAttribute(
 			"aria-valuenow",
 			"4",
@@ -32,7 +32,7 @@ test.describe("技能页", () => {
 
 	test("分类 chips 可筛选并再次点击恢复全部", async ({ page }) => {
 		const frontend = page.getByRole("button", {
-			name: "Frontend",
+			name: "前端",
 			exact: true,
 		});
 		await frontend.click();
@@ -60,7 +60,7 @@ test.describe("技能页 Swup 导航", () => {
 
 	test("从持久顶栏进入后同步页面、导航与侧栏状态", async ({ page }) => {
 		await page.goto("/compass/", { waitUntil: "domcontentloaded" });
-		await page.getByRole("button", { name: "More", exact: true }).click();
+		await page.getByRole("button", { name: "更多", exact: true }).click();
 		await page.locator('a[data-nav-key="skills"]').click();
 
 		await expect(page).toHaveURL(/\/skills\/$/);

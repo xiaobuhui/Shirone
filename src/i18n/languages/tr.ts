@@ -249,6 +249,7 @@ export const tr: Translation = {
 	[Key.paginationPage]: "Sayfa {page}",
 	[Key.paginationJump]: "Sayfaya git",
 	[Key.tagsViewAll]: "Tüm etiketleri gör",
+	[Key.momentsViewAll]: "Tüm anları gör",
 
 	[Key.author]: "Yazar",
 	[Key.publishedAt]: "Yayınlanma:",

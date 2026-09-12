@@ -30,39 +30,41 @@ test.describe("相册页响应式滚动", () => {
 });
 
 test.describe("受保护相册", () => {
+	// 断言文案与站点语言(zh_CN)一致：i18n 见 src/i18n/languages/zh_CN.ts 的 albumPassword*，
+	// 密码提示与照片 alt 来自内容仓 public/images/albums/EncryptedExample/info.json。
 	test("提供完整的密码输入与解锁反馈", async ({ page }) => {
 		await page.goto("/albums/EncryptedExample/", { waitUntil: "networkidle" });
 
-		const input = page.getByRole("textbox", { name: "Password" });
-		const submit = page.getByRole("button", { name: "Unlock album" });
-		const visibility = page.getByRole("button", { name: "Show password" });
+		const input = page.getByRole("textbox", { name: "密码" });
+		const submit = page.getByRole("button", { name: "解锁相册" });
+		const visibility = page.getByRole("button", { name: "显示密码" });
 
 		await expect(
-			page.getByRole("heading", { name: "This album is protected" }),
+			page.getByRole("heading", { name: "这是一个受保护相册" }),
 		).toBeVisible();
-		await expect(page.getByText("Six digits", { exact: true })).toBeVisible();
+		await expect(page.getByText("六位数字", { exact: true })).toBeVisible();
 		await expect(input).toHaveAttribute("type", "password");
 		await expect(input).toHaveAttribute("autocomplete", "current-password");
 
 		await visibility.click();
 		await expect(input).toHaveAttribute("type", "text");
 		await expect(
-			page.getByRole("button", { name: "Hide password" }),
+			page.getByRole("button", { name: "隐藏密码" }),
 		).toBeVisible();
 
 		await submit.click();
 		await expect(
-			page.getByText("Enter a password", { exact: true }),
+			page.getByText("请输入密码", { exact: true }),
 		).toBeVisible();
 		await expect(input).toHaveAttribute("aria-invalid", "true");
 
 		await input.fill("000000");
 		await expect(
-			page.getByText("Enter a password", { exact: true }),
+			page.getByText("请输入密码", { exact: true }),
 		).toBeHidden();
 		await submit.click();
 		await expect(
-			page.getByText("That password could not unlock this album", {
+			page.getByText("密码无法解锁这个相册", {
 				exact: true,
 			}),
 		).toBeVisible();
@@ -76,23 +78,23 @@ test.describe("受保护相册", () => {
 		await expect(page.locator(".album-gallery")).not.toHaveClass(
 			/album-gallery--grid/,
 		);
-		const portrait = page.getByAltText("A protected vertical photograph");
-		const landscape = page.getByAltText("A protected garden landscape");
+		const portrait = page.getByAltText("受保护的竖构图照片");
+		const landscape = page.getByAltText("受保护的庭院风景");
 		await expect(
 			page.locator(".album-gallery__item img").first(),
-		).toHaveAttribute("alt", "A protected vertical photograph");
+		).toHaveAttribute("alt", "受保护的竖构图照片");
 		await expect
 			.poll(async () => {
 				const portraitBox = await portrait.boundingBox();
 				const landscapeBox = await landscape.boundingBox();
 				if (!portraitBox || !landscapeBox) return false;
 				const naturalDirections = await page.evaluate(() => {
-					const portraitImage = document.querySelector(
-						'img[alt="A protected vertical photograph"]',
-					) as HTMLImageElement | null;
-					const landscapeImage = document.querySelector(
-						'img[alt="A protected garden landscape"]',
-					) as HTMLImageElement | null;
+				const portraitImage = document.querySelector(
+					'img[alt="受保护的竖构图照片"]',
+				) as HTMLImageElement | null;
+				const landscapeImage = document.querySelector(
+					'img[alt="受保护的庭院风景"]',
+				) as HTMLImageElement | null;
 					return Boolean(
 						portraitImage &&
 							landscapeImage &&

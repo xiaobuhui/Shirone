@@ -239,6 +239,7 @@ export const zh_TW: Translation = {
 	[Key.paginationPage]: "第 {page} 頁",
 	[Key.paginationJump]: "跳轉到頁面",
 	[Key.tagsViewAll]: "查看全部標籤",
+	[Key.momentsViewAll]: "查看更多動態",
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "發佈於",

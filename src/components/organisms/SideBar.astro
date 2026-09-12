@@ -13,6 +13,7 @@
 import Announcement from "@components/molecules/Announcement.astro";
 import Calendar from "@components/molecules/Calendar.astro";
 import Categories from "@components/molecules/Categories.astro";
+import SidebarMoments from "@components/molecules/SidebarMoments.astro";
 import SidebarTOC from "@components/molecules/SidebarTOC.astro";
 import SiteStats from "@components/molecules/SiteStats.astro";
 import Tags from "@components/molecules/Tags.astro";
@@ -73,6 +74,7 @@ const componentMap = {
 	announcement: Announcement,
 	stats: SiteStats,
 	calendar: Calendar,
+	moments: SidebarMoments,
 	toc: SidebarTOC,
 	music: MusicSidebar,
 } satisfies Record<SidebarWidget["type"], unknown>;

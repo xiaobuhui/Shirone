@@ -13,23 +13,23 @@ test.describe("设备展示页", () => {
 			"data-current-page",
 			"devices",
 		);
-		await expect(page.locator(".page-header__title")).toHaveText("My Devices");
+		await expect(page.locator(".page-header__title")).toHaveText("我的设备");
 		await expect(page.locator(".devices-section__count")).toHaveText(
-			"5 devices",
+			"5 款设备",
 		);
 
 		const macbook = page.locator('[data-device="macbook-pro-16"]');
 		await expect(macbook.locator("h2")).toHaveText('MacBook Pro 16"');
 		await expect(macbook.locator(".device-card__brand")).toHaveText("Apple");
 		await expect(macbook.locator('[data-status="active"]')).toContainText(
-			"Active",
+			"主力在役",
 		);
 		await expect(macbook.locator(".device-card__specs")).toContainText(
 			"M3 Max / 64GB / 2TB",
 		);
 		await expect(macbook).toHaveClass(/device-card--featured/);
 		await expect(
-			macbook.getByRole("link", { name: "View details" }),
+			macbook.getByRole("link", { name: "查看详情" }),
 		).toHaveAttribute("href", "https://www.apple.com/macbook-pro/");
 
 		// 无图片设备：渲染图标瓷砖形态（不渲染媒体区）
@@ -40,7 +40,7 @@ test.describe("设备展示页", () => {
 		// 备用状态（backup）正确渲染
 		const ipad = page.locator('[data-device="ipad-pro-11"]');
 		await expect(ipad.locator('[data-status="backup"]')).toContainText(
-			"Backup",
+			"备用设备",
 		);
 	});
 
@@ -58,14 +58,14 @@ test.describe("设备展示页", () => {
 		page,
 	}) => {
 		await page
-			.getByRole("button", { name: "Mobile & EDC", exact: true })
+			.getByRole("button", { name: "随身设备", exact: true })
 			.click();
 		await expect(
 			page.locator(".devices-section__loading .m3-loading--contained"),
 		).toBeVisible();
 		await expect(page.locator(".device-card")).toHaveCount(2);
 		await expect(page.locator(".devices-section__count")).toHaveText(
-			"2 devices",
+			"2 款设备",
 		);
 		await expect(page.locator('[data-device="iphone-16-pro"]')).toBeVisible();
 		await expect(page.locator('[data-device="ipad-pro-11"]')).toBeVisible();
@@ -74,7 +74,7 @@ test.describe("设备展示页", () => {
 
 		// 再次点击已选分类取消筛选，恢复全部
 		await page
-			.getByRole("button", { name: "Mobile & EDC", exact: true })
+			.getByRole("button", { name: "随身设备", exact: true })
 			.click();
 		await expect(page.locator(".device-card")).toHaveCount(DEVICE_COUNT);
 	});
@@ -84,7 +84,7 @@ test.describe("设备展示页", () => {
 		await searchInput.fill("Unknown9999");
 		await expect(page.locator(".device-card")).toHaveCount(0);
 		await expect(page.locator(".devices-section__empty")).toContainText(
-			"No devices matched your filters",
+			"没有找到匹配的设备",
 		);
 	});
 
@@ -105,7 +105,7 @@ test.describe("设备展示页", () => {
 
 	test("URL 参数刷新后恢复筛选状态", async ({ page }) => {
 		await page
-			.getByRole("button", { name: "Audio & Visual", exact: true })
+			.getByRole("button", { name: "音频影音", exact: true })
 			.click();
 		await expect(page).toHaveURL(/[?&]category=audio/);
 		await expect(page.locator(".device-card")).toHaveCount(1);
@@ -116,7 +116,7 @@ test.describe("设备展示页", () => {
 		await expect(page.locator(".device-card")).toHaveCount(1);
 		await expect(page.locator('[data-device="sony-wh1000xm5"]')).toBeVisible();
 		await expect(
-			page.getByRole("button", { name: "Audio & Visual", exact: true }),
+			page.getByRole("button", { name: "音频影音", exact: true }),
 		).toHaveAttribute("aria-pressed", "true");
 	});
 });
@@ -126,7 +126,7 @@ test.describe("设备展示页 Swup 导航", () => {
 
 	test("从持久顶栏进入后同步页面、导航与侧栏状态", async ({ page }) => {
 		await page.goto("/skills/", { waitUntil: "domcontentloaded" });
-		await page.getByRole("button", { name: "More", exact: true }).click();
+		await page.getByRole("button", { name: "更多", exact: true }).click();
 		await page.locator('a[data-nav-key="devices"]').click();
 
 		await expect(page).toHaveURL(/\/devices\/$/);

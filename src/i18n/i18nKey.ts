@@ -258,6 +258,7 @@ enum I18nKey {
 	more = "more",
 	categoriesViewAll = "categoriesViewAll",
 	tagsViewAll = "tagsViewAll",
+	momentsViewAll = "momentsViewAll",
 
 	paginationPrev = "paginationPrev",
 	paginationNext = "paginationNext",

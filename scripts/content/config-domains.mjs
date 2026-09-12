@@ -68,6 +68,12 @@ export const CONFIG_DOMAINS = Object.freeze([
 		module: "@/types/postListConfig",
 	},
 	{
+		key: "category",
+		file: "category",
+		type: "CategoryConfig",
+		module: "@/types/categoryConfig",
+	},
+	{
 		key: "article",
 		file: "article",
 		type: "ArticleConfig",

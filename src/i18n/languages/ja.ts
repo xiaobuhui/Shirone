@@ -247,6 +247,7 @@ export const ja: Translation = {
 	[Key.paginationPage]: "{page} ページ",
 	[Key.paginationJump]: "ページへ移動",
 	[Key.tagsViewAll]: "すべてのタグを見る",
+	[Key.momentsViewAll]: "すべてのモーメンツを見る",
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "公開日",

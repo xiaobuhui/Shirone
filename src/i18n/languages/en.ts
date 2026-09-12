@@ -247,6 +247,7 @@ export const en: Translation = {
 	[Key.paginationPage]: "Page {page}",
 	[Key.paginationJump]: "Jump to page",
 	[Key.tagsViewAll]: "View all tags",
+	[Key.momentsViewAll]: "View all moments",
 
 	[Key.author]: "Author",
 	[Key.publishedAt]: "Published at",

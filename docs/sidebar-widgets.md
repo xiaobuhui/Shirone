@@ -20,6 +20,7 @@ SideBar 通过 `src/config/sidebarConfig.ts` 中的 `components` 数组动态编
 | `announcement` | `Announcement` | top | 独立公告卡片（由 `announcementConfig.ts` 驱动） |
 | `stats` | `SiteStats` | top | 站点统计规格表 |
 | `calendar` | `Calendar` | sticky | 月度文章历（SSR 直出 + 水合岛） |
+| `moments` | `SidebarMoments` | top | 最新动态（取最近 `collapseAfter` 条，底部「查看更多动态」→ `/moments/`） |
 | `music` | `MusicSidebar` | top | 持久音乐播放器（全局配置 + widget 双开关，默认关闭） |
 | `toc` | `SidebarTOC` | sticky | 当前文章目录（通常只在文章页显示） |
 
@@ -53,6 +54,7 @@ interface SidebarWidgetBase {
 ## 3. Categories — 分类列表
 
 - **数据源**：`src/utils/content-utils.ts` 的 `getCategoryList()`；
+- **顺序**：由 `categoryConfig.order` 控制（见 `src/config/README.md`）；未配置时按分类名字母序。该顺序与顶部分类栏、`/categories/` 页一致；
 - **渲染**：`WidgetLayout` 外壳 + 分类项列表；
 - **折叠行为**：支持 `collapseAfter` 字段，超出数量后以平滑动画展开/收起；
 - **页面范围**：全页面通用。
@@ -119,7 +121,18 @@ interface SidebarWidgetBase {
 
 ---
 
-## 11. 新增 widget 的设计约束
+## 11. SidebarMoments — 最新动态
+
+- **数据源**：`src/utils/content-utils.ts` 的 `getSortedMoments()`（已按发布时间倒序、置顶优先，构建期渲染 Markdown 为 HTML）；
+- **渲染**：`WidgetLayout` 外壳 + 动态列表，每条呈现「日期（`formatDateToYYYYMMDD`）+ 纯文本摘要」，摘要由渲染 HTML 去标签、折叠空白后截断至 56 字符，最多 2 行（`-webkit-line-clamp`）；
+- **展示条数**：`collapseAfter`（默认 3）即侧栏直接展示的条数，非折叠阈值；
+- **跳转**：列表每一项与底部「查看更多动态」（`I18nKey.momentsViewAll`）均指向动态页 `/moments/`（经 `url()` 处理），侧栏不内嵌详情；
+- **零额外负担**：无任何动态时不渲染整张卡片（`items.length > 0` 守卫），存量站点开启前零 DOM；
+- **页面范围**：全页面通用，通常置于副栏 `slot: "top"`；如需限定用 `pages`（`SidebarPage` 白名单）。
+
+---
+
+## 12. 新增 widget 的设计约束
 
 1. **外观语言**：优先复用既有原子——`MetaIcon`（单图标徽标）、`Chip` / `Button` / `Card`、`WidgetLayout`（标题外壳）、`AccentBar`；不要自创新的徽标/容器风格；
 2. **外壳取舍**：短消息类（如公告）不用 `WidgetLayout`；有明确"分组 + 列表"语义的（分类/标签/统计），以及音乐等需要统一侧栏标题的有机体使用；

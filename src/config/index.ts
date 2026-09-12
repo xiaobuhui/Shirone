@@ -13,6 +13,7 @@ export {
 	resolvedAnimeOptions,
 } from "./animeConfig";
 export { announcementConfig } from "./announcementConfig";
+export { categoryConfig } from "./categoryConfig";
 export {
 	type ArticleDiscoveryOptions,
 	type ArticleShareOptions,

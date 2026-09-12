@@ -1,0 +1,147 @@
+---
+/**
+ * 最新动态侧栏 widget。
+ *
+ * 取数走 utils/content-utils 的 getSortedMoments（构建期渲染 Markdown），
+ * 只截取前 collapseAfter 条（默认 3）做摘要，卡片底部提供唯一的
+ * 「查看更多动态」入口，指向完整动态页（/moments/）。
+ *
+ * 无非空动态时不渲染整个卡片（零 DOM 占用）。
+ */
+import { Icon } from "astro-icon/components";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import { getSortedMoments } from "../../utils/content-utils";
+import { formatDateToYYYYMMDD } from "../../utils/date-utils";
+import { url } from "../../utils/url-utils";
+import type { MomentsWidget } from "@/types/sidebarConfig";
+import WidgetLayout from "./WidgetLayout.astro";
+
+interface Props {
+	class?: string;
+	style?: string;
+	widget?: MomentsWidget;
+}
+
+const className = Astro.props.class;
+const style = Astro.props.style;
+
+const DISPLAY_LIMIT = Math.max(1, Astro.props.widget?.collapseAfter ?? 3);
+const EXCERPT_LENGTH = 56;
+
+/** 渲染后的 HTML → 纯文本摘要（去标签、折叠空白、截断） */
+function toExcerpt(html: string): string {
+	const plain = html
+		.replace(/<[^>]+>/g, " ")
+		.replace(/&(?:nbsp|amp|lt|gt|quot|#\d+);/gi, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+	return plain.length > EXCERPT_LENGTH
+		? `${plain.slice(0, EXCERPT_LENGTH)}…`
+		: plain;
+}
+
+// getSortedMoments 已按发布时间倒序（置顶优先），直接切片即可
+const items = (await getSortedMoments())
+	.slice(0, DISPLAY_LIMIT)
+	.map((moment) => ({
+		id: moment.id,
+		date: formatDateToYYYYMMDD(new Date(moment.published)),
+		excerpt: toExcerpt(moment.html),
+	}));
+
+const momentsUrl = url("/moments/");
+---
+
+{
+	items.length > 0 && (
+		<WidgetLayout
+			name={i18n(I18nKey.moments)}
+			id="sidebar-moments"
+			class={className}
+			style={style}
+		>
+			<ul class="m3-sidebar-moments">
+				{items.map((item) => (
+					<li class="m3-sidebar-moments__item">
+						<a href={momentsUrl} class="m3-sidebar-moments__link">
+							<span class="m3-sidebar-moments__date">{item.date}</span>
+							{item.excerpt && (
+								<span class="m3-sidebar-moments__text">{item.excerpt}</span>
+							)}
+						</a>
+					</li>
+				))}
+			</ul>
+			<div slot="footer" class="widget-index-link">
+				<a href={momentsUrl}>
+					{i18n(I18nKey.momentsViewAll)}
+					<Icon name="material-symbols:chevron-right-rounded" />
+				</a>
+			</div>
+		</WidgetLayout>
+	)
+}
+
+<style lang="stylus">
+.m3-sidebar-moments
+	display: flex
+	flex-direction: column
+	gap: var(--m3e-space-1)
+	margin: 0
+	padding: 0
+	list-style: none
+
+	&__item
+		margin: 0
+
+	&__link
+		display: flex
+		flex-direction: column
+		gap: 0.125rem
+		padding: 0.5rem 0.625rem
+		border-radius: var(--shape-corner-m)
+		text-decoration: none
+		transition: background-color var(--m3e-duration-short) var(--m3e-easing-standard)
+
+		&:hover
+			background: unquote("color-mix(in oklab, var(--primary) 8%, transparent)")
+
+	&__date
+		color: var(--on-surface-variant)
+		font: var(--m3e-type-label-small)
+		font-variant-numeric: tabular-nums
+
+	&__text
+		display: -webkit-box
+		overflow: hidden
+		color: var(--on-surface)
+		font: var(--m3e-type-body-small)
+		-webkit-box-orient: vertical
+		-webkit-line-clamp: 2
+
+.widget-index-link
+	padding: 0.625rem 1rem 0
+
+	> a
+		display: flex
+		align-items: center
+		justify-content: center
+		gap: 0.25rem
+		width: 100%
+		min-height: 2.25rem
+		padding: 0 0.5rem
+		border-radius: var(--shape-corner-m)
+		color: var(--primary)
+		font: var(--m3e-type-label-medium)
+		font-weight: 600
+		text-decoration: none
+		transition: background-color var(--m3e-duration-short) var(--m3e-easing-standard)
+
+		&:hover
+			background: unquote("color-mix(in oklab, var(--primary) 8%, transparent)")
+
+		> :global(svg)
+			width: 1.125rem
+			height: 1.125rem
+</style>

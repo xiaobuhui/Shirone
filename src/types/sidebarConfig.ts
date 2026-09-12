@@ -113,6 +113,18 @@ export interface CalendarWidget {
 	startOfWeek?: "mon" | "sun";
 }
 
+/** 最新动态（按发布时间倒序取最近 collapseAfter 条，底部提供完整动态页入口） */
+export interface MomentsWidget {
+	type: "moments";
+	enable: boolean;
+	slot: SidebarWidgetSlot;
+	column?: SidebarColumn;
+	/** 侧栏直接展示条数，默认 3 */
+	collapseAfter?: number;
+	/** 限定显示的页面，省略或空数组表示所有页面 */
+	pages?: SidebarPage[];
+}
+
 /** 文章目录（仅文章详情页显示） */
 export interface TocWidget {
 	type: "toc";
@@ -139,6 +151,7 @@ export type SidebarWidget =
 	| AnnouncementWidget
 	| StatsWidget
 	| CalendarWidget
+	| MomentsWidget
 	| TocWidget
 	| MusicWidget;
 

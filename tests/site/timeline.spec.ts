@@ -14,9 +14,9 @@ test.describe("时间线页", () => {
 			"data-current-page",
 			"timeline",
 		);
-		await expect(page.locator(".page-header__title")).toHaveText("Timeline");
+		await expect(page.locator(".page-header__title")).toHaveText("时间线");
 		await expect(page.locator(".timeline-section__count")).toHaveText(
-			`${TOTAL_COUNT} milestones`,
+			`${TOTAL_COUNT} 个节点`,
 		);
 
 		const featuredItem = page.locator(".timeline-card--featured").first();
@@ -25,13 +25,13 @@ test.describe("时间线页", () => {
 			featuredItem.locator(".timeline-card__featured-pill"),
 		).toBeVisible();
 		await expect(featuredItem.locator(".timeline-card__title")).toContainText(
-			"Shirone Theme M3E Major Architecture Upgrade",
+			"Shirone 主题 M3E 架构大改版",
 		);
 	});
 
 	test("分类 chips 可筛选并再次点击恢复全部", async ({ page }) => {
 		const milestoneChip = page.getByRole("button", {
-			name: "Milestones",
+			name: "里程碑",
 			exact: true,
 		});
 		await milestoneChip.click();
@@ -59,7 +59,7 @@ test.describe("时间线页 Swup 导航", () => {
 
 	test("从持久顶栏进入后同步页面、导航与侧栏状态", async ({ page }) => {
 		await page.goto("/compass/", { waitUntil: "domcontentloaded" });
-		await page.getByRole("button", { name: "More", exact: true }).click();
+		await page.getByRole("button", { name: "更多", exact: true }).click();
 		await page.locator('a[data-nav-key="timeline"]').click();
 
 		await expect(page).toHaveURL(/\/timeline\/$/);
