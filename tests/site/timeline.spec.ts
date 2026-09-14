@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const TOTAL_COUNT = 5;
-const MILESTONE_COUNT = 1;
+const TOTAL_COUNT = 1;
 
 test.describe("时间线页", () => {
 	test.beforeEach(async ({ page }) => {
@@ -29,17 +28,14 @@ test.describe("时间线页", () => {
 		);
 	});
 
-	test("分类 chips 可筛选并再次点击恢复全部", async ({ page }) => {
-		const milestoneChip = page.getByRole("button", {
-			name: "里程碑",
-			exact: true,
-		});
-		await milestoneChip.click();
-		await expect(milestoneChip).toHaveAttribute("aria-pressed", "true");
-		await expect(page.locator(".timeline-card")).toHaveCount(MILESTONE_COUNT);
-
-		await milestoneChip.click();
-		await expect(milestoneChip).toHaveAttribute("aria-pressed", "false");
+	test("单一分类时不渲染筛选 chips，节点数量正确", async ({ page }) => {
+		// 组件规则：categoryItems.length > 1 才渲染 Chips；
+		// 当前数据只剩 milestone（里程碑）一个分类，筛选器整体不出现。
+		// 数据里出现第二个分类后，筛选 chips 与交互断言应一并恢复。
+		await expect(page.locator(".timeline-section__chips")).toHaveCount(0);
+		await expect(page.locator(".timeline-section__count")).toHaveText(
+			`${TOTAL_COUNT} 个节点`,
+		);
 		await expect(page.locator(".timeline-card")).toHaveCount(TOTAL_COUNT);
 	});
 

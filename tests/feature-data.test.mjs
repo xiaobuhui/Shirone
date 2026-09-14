@@ -25,15 +25,19 @@ describe("Feature Data & Resolver Tests", () => {
 	});
 
 	it("resolveProjectsData applies disabledKeys correctly", () => {
-		const config = {
+		// 当前数据仅 Shirone 一项：过滤禁用项后应为空，未禁用时保留
+		const all = resolveProjectsData({ enable: true, categories: [] });
+		assert.deepEqual(
+			all.map((p) => p.key),
+			["shirone"],
+		);
+
+		const resolved = resolveProjectsData({
 			enable: true,
 			categories: [],
-			disabledKeys: ["folkpatch"],
-		};
-		const resolved = resolveProjectsData(config);
-		assert.ok(resolved.some((p) => p.key === "shirone"));
-		assert.ok(resolved.some((p) => p.key === "kernelpatch"));
-		assert.ok(!resolved.some((p) => p.key === "folkpatch"));
+			disabledKeys: ["shirone"],
+		});
+		assert.equal(resolved.length, 0);
 	});
 
 	it("resolveSkillsData applies disabledNames correctly", () => {
@@ -48,15 +52,20 @@ describe("Feature Data & Resolver Tests", () => {
 	});
 
 	it("resolveTimelineData applies disabledTitles and order correctly", () => {
-		const config = {
+		// 当前数据仅一条：默认保留，禁用后为空
+		const all = resolveTimelineData({ enable: true, categories: [] });
+		assert.deepEqual(
+			all.map((t) => t.title),
+			["Shirone 主题 M3E 架构大改版"],
+		);
+
+		const resolved = resolveTimelineData({
 			enable: true,
 			categories: [],
 			order: "asc",
-			disabledTitles: ["资深前端工程师"],
-		};
-		const resolved = resolveTimelineData(config);
-		assert.ok(!resolved.some((t) => t.title === "资深前端工程师"));
-		assert.equal(resolved[0].title, "开始写个人博客与技术笔记");
+			disabledTitles: ["Shirone 主题 M3E 架构大改版"],
+		});
+		assert.equal(resolved.length, 0);
 	});
 
 	it("resolveDevicesData applies disabledIds correctly", () => {

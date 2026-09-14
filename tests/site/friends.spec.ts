@@ -9,7 +9,7 @@ import { expect, test } from "@playwright/test";
  * 站点语言 zh_CN（siteConfig.lang），文案/标签断言与 zh_CN 及内容仓 data/friends.ts 保持一致。
  */
 
-const FRIEND_COUNT = 3;
+const FRIEND_COUNT = 1;
 
 test.describe("友链页", () => {
 	test.beforeEach(async ({ page }) => {
@@ -38,9 +38,10 @@ test.describe("友链页", () => {
 		// PostCard 式箭头（chevron，hover 右滑）
 		await expect(page.locator(".friend-card__arrow")).toHaveCount(FRIEND_COUNT);
 		// 官方 Chips 原子（filter 形态）承担标签筛选
+		// 数量 = 数据里出现的去重标签数（当前仅"博客""主题"）
 		await expect(
 			page.locator(".friend-section__chips .m3-chip--filter"),
-		).toHaveCount(4);
+		).toHaveCount(2);
 		// 换链说明为 PageHeader 副标题
 		await expect(page.locator(".page-header__subtitle")).toBeVisible();
 		await expect(page.locator(".page-header__subtitle")).toContainText(
@@ -71,7 +72,7 @@ test.describe("友链页", () => {
 	});
 
 	test("搜索过滤 + 空态", async ({ page }) => {
-		await page.locator(".friend-section__search input").fill("Astro");
+		await page.locator(".friend-section__search input").fill("Fuwari");
 		await expect(page.locator(".friend-card")).toHaveCount(1);
 		await page.locator(".friend-section__search input").fill("no such site");
 		await expect(page.locator(".friend-section__empty")).toBeVisible();
@@ -101,24 +102,34 @@ test.describe("友链页 Swup 导航", () => {
 				exact: true,
 			});
 			await blogFilter.click();
-			const loading = page.locator(".friend-section__loading");
-			const indicator = loading.locator(".m3-loading");
-			await expect(loading).toBeVisible();
-			await expect(indicator).toHaveCSS("width", "64px");
-			await expect(indicator).toHaveCSS("height", "64px");
-			const centers = await Promise.all([
-				loading.boundingBox(),
-				indicator.boundingBox(),
-			]);
-			expect(centers[0]).not.toBeNull();
-			expect(centers[1]).not.toBeNull();
-			expect(
-				Math.abs(
-					centers[0]!.x +
-						centers[0]!.width / 2 -
-						(centers[1]!.x + centers[1]!.width / 2),
-				),
-			).toBeLessThanOrEqual(1);
+			// 过渡指示器是瞬态节点（三段过渡结束即移除），断言必须原子化：
+			// 单次 evaluate 内同时取到加载容器与指示器，并校验尺寸与居中偏移。
+			await expect
+				.poll(
+					() =>
+						page.evaluate(() => {
+							const loading = document.querySelector(
+								".friend-section__loading",
+							) as HTMLElement | null;
+							const indicator = loading?.querySelector(
+								".m3-loading",
+							) as HTMLElement | null;
+							if (!loading || !indicator) return false;
+							const style = getComputedStyle(indicator);
+							const outer = loading.getBoundingClientRect();
+							const inner = indicator.getBoundingClientRect();
+							// 只锁定水平居中（容器留白导致垂直方向有固定 12px 偏移，非缺陷）
+							return (
+								style.width === "64px" &&
+								style.height === "64px" &&
+								Math.abs(
+									outer.x + outer.width / 2 - (inner.x + inner.width / 2),
+								) <= 1
+							);
+						}),
+					{ timeout: 10000, message: "等待加载指示器出现并测量居中" },
+				)
+				.toBe(true);
 
 			await page.locator('#top-row a[data-nav-key="home"]').click();
 			await expect(page).toHaveURL(/\/$/);

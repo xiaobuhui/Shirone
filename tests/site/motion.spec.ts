@@ -5,7 +5,14 @@ import { expect, test } from "@playwright/test";
  * - 正常模式：展开/收起播放高度过渡（动画期间为中间值）；
  * - Reduce Motion（系统 + 站点开关）：直接到位、不播动画；
  * - aria-expanded 与内容显隐正确。
+ *
+ * 站点默认语言为 zh_CN：分组切换名「归档分组」、年份组第二组为 2024（3 篇文章）、
+ * 侧栏统计行标签为「标签」。
  */
+/** 内容仓真实数据：年份分组倒序 2026(17) / 2024(3) / 2023(2) / 2022(1) */
+const SECOND_YEAR_GROUP_COUNT = 3;
+const ARCHIVE_CATEGORIES = ["例子", "一些碎碎念", "指南"];
+
 test.describe("Site motion", () => {
 	test.use({ viewport: { width: 1280, height: 900 } });
 
@@ -50,7 +57,7 @@ test.describe("Site motion", () => {
 			page.locator(
 				".m3-blog-archive__group:nth-child(2) .m3-blog-archive__item",
 			),
-		).toHaveCount(4);
+		).toHaveCount(SECOND_YEAR_GROUP_COUNT);
 	});
 
 	test("does not collapse animate on initial render or grouping changes", async ({
@@ -82,13 +89,16 @@ test.describe("Site motion", () => {
 		).toBe(0);
 
 		await page
-			.getByRole("group", { name: "Group archive by" })
-			.getByText("By Category", { exact: true })
+			.getByRole("group", { name: "归档分组" })
+			.getByText("按分类", { exact: true })
 			.click();
-		await expect(page.locator(".m3-blog-archive__group-title")).toHaveText([
-			"Examples",
-			"Guides",
-		]);
+		// 只验证「切换真的生效」（3 个分类组）；中文先后取决于浏览器默认 collator，不锁序
+		await expect(page.locator(".m3-blog-archive__group-title")).toHaveCount(3);
+		expect(
+			new Set(
+				await page.locator(".m3-blog-archive__group-title").allTextContents(),
+			),
+		).toEqual(new Set(ARCHIVE_CATEGORIES));
 		expect(
 			await page.evaluate(
 				() =>
@@ -174,7 +184,7 @@ test.describe("Site motion", () => {
 			page.locator(
 				".m3-blog-archive__group:nth-child(2) .m3-blog-archive__item",
 			),
-		).toHaveCount(4);
+		).toHaveCount(SECOND_YEAR_GROUP_COUNT);
 	});
 
 	test("toggles aria-expanded and hides content when collapsed", async ({
@@ -294,7 +304,7 @@ test.describe("sidebar pages filter (swup sync)", () => {
 	) {
 		return page.evaluate(() => {
 			const row = [...document.querySelectorAll(".m3-site-stats__row")].find(
-				(element) => element.textContent?.includes("Tags"),
+				(element) => element.textContent?.includes("标签"),
 			);
 			const icon = row?.querySelector(
 				'svg[data-icon="material-symbols:tag-rounded"]',

@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-const PROJECT_COUNT = 3;
+/**
+ * 项目页功能锁定。
+ * 数据来自 src/data/projects.ts（当前仅 Shirone 一项），断言随之收敛；
+ * 站点语言 zh_CN，文案断言与 zh_CN 及内容仓 data/projects.ts 保持一致。
+ */
+const PROJECT_COUNT = 1;
 
 test.describe("项目页", () => {
 	test.beforeEach(async ({ page }) => {
@@ -13,9 +18,9 @@ test.describe("项目页", () => {
 			"data-current-page",
 			"projects",
 		);
-		await expect(page.locator(".page-header__title")).toHaveText("Projects");
+		await expect(page.locator(".page-header__title")).toHaveText("项目");
 		await expect(page.locator(".projects-section__count")).toHaveText(
-			"3 projects",
+			"1 个项目",
 		);
 
 		const shirone = page.locator('[data-project="shirone"]');
@@ -26,35 +31,18 @@ test.describe("项目页", () => {
 		);
 		await expect(shirone).toHaveClass(/project-card--featured/);
 		await expect(shirone.locator('[data-phase="building"]')).toHaveText(
-			"Building",
+			"构建中",
 		);
 		await expect(shirone.locator(".project-card__technologies li")).toHaveCount(
 			4,
 		);
 		await expect(
-			shirone.getByRole("link", { name: "View source" }),
+			shirone.getByRole("link", { name: "查看源码" }),
 		).toHaveAttribute("href", "https://github.com/LyraVoid/Shirone");
 
-		// 无封面项目：渲染图标瓷砖形态（不渲染封面区）
-		const folkpatch = page.locator('[data-project="folkpatch"]');
-		await expect(folkpatch.locator(".project-card__icon")).toBeVisible();
-		await expect(folkpatch.locator(".project-card__cover")).toHaveCount(0);
-		await expect(folkpatch.locator('[data-phase="building"]')).toHaveText(
-			"Building",
-		);
-		await expect(
-			folkpatch.getByRole("link", { name: "View source" }),
-		).toHaveAttribute("href", "https://github.com/LyraVoid/FolkPatch");
-
-		const kernelpatch = page.locator('[data-project="kernelpatch"]');
-		await expect(kernelpatch.locator(".project-card__icon")).toBeVisible();
-		await expect(kernelpatch.locator(".project-card__cover")).toHaveCount(0);
-		await expect(kernelpatch.locator('[data-phase="shipped"]')).toHaveText(
-			"Shipped",
-		);
-		await expect(
-			kernelpatch.getByRole("link", { name: "View source" }),
-		).toHaveAttribute("href", "https://github.com/lyravoid/KernelPatch");
+		// 带封面项目：渲染封面区（不渲染图标瓷砖）
+		await expect(shirone.locator(".project-card__cover")).toBeVisible();
+		await expect(shirone.locator(".project-card__icon")).toHaveCount(0);
 	});
 
 	test("直接加载时导航高亮与侧栏页面过滤正确", async ({ page }) => {
@@ -67,28 +55,18 @@ test.describe("项目页", () => {
 		await expect(page.locator('widget-layout[data-id="tags"]')).toBeVisible();
 	});
 
-	test("分类筛选会同步项目数量与可见卡片（含 LoadingIndicator 过渡）", async ({
-		page,
-	}) => {
-		await page.getByRole("button", { name: "Android", exact: true }).click();
-		// 三段过渡的指示器阶段（contained LoadingIndicator 出现在内容区）
-		await expect(
-			page.locator(".projects-section__loading .m3-loading--contained"),
-		).toBeVisible();
-		await expect(page.locator(".project-card")).toHaveCount(2);
+	test("单一分类时不渲染筛选 chips，数量文案正确", async ({ page }) => {
+		// 组件规则：categoryItems.length > 1 才渲染 Chips；
+		// 当前数据只有 theme（主题）一个分类，因此筛选器整体不出现。
+		// 数据里出现第二个分类后，筛选 chips 会自动回归（届时恢复交互断言）。
+		await expect(page.locator(".projects-section__chips")).toHaveCount(0);
 		await expect(page.locator(".projects-section__count")).toHaveText(
-			"2 projects",
+			"1 个项目",
 		);
-		await expect(page.locator('[data-project="shirone"]')).toHaveCount(0);
-		await expect(page.locator('[data-project="folkpatch"]')).toBeVisible();
-		await expect(page.locator('[data-project="kernelpatch"]')).toBeVisible();
-		await expect(page.locator(".projects-section__loading")).toHaveCount(0);
-
-		await page.getByRole("button", { name: "Android", exact: true }).click();
 		await expect(page.locator(".project-card")).toHaveCount(PROJECT_COUNT);
 	});
 
-	test("实时搜索过滤与清除（URL ?q= 同步）", async ({ page }) => {
+	test("实时搜索过滤、空态与清除（URL ?q= 同步）", async ({ page }) => {
 		const searchInput = page.locator(".projects-section__search input");
 		await expect(searchInput).toBeVisible();
 		await searchInput.fill("Shirone");
@@ -96,9 +74,13 @@ test.describe("项目页", () => {
 		await expect(page.locator('[data-project="shirone"]')).toBeVisible();
 		await expect(page).toHaveURL(/[?&]q=Shirone/);
 
+		// 无命中：空态
+		await searchInput.fill("no such project");
+		await expect(page.locator(".projects-section__empty")).toBeVisible();
+		await expect(page.locator(".project-card")).toHaveCount(0);
+
 		// 清除搜索恢复全部
-		const clearBtn = page.locator(".projects-section__search-clear");
-		await clearBtn.click();
+		await page.locator(".projects-section__search-clear").click();
 		await expect(page.locator(".project-card")).toHaveCount(PROJECT_COUNT);
 		await expect(page).not.toHaveURL(/q=/);
 	});
@@ -180,32 +162,12 @@ test.describe("项目页", () => {
 			.toBe(true);
 	});
 
-	test("无封面卡片在桌面端将技术栈与源码操作合并为同一行", async ({ page }) => {
+	test("当前数据没有无封面项目，无封面卡片数为 0", async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 900 });
-		const cards = page.locator(".project-card--without-cover");
-
-		await expect(cards).toHaveCount(PROJECT_COUNT - 1);
-
-		const rowsMerged = await cards.evaluateAll((elements) =>
-			elements.every((element) => {
-				const card = element as HTMLElement;
-				const technologies = card.querySelector<HTMLElement>(
-					".project-card__technologies",
-				);
-				const actions = card.querySelector<HTMLElement>(
-					".project-card__actions",
-				);
-				if (!technologies || !actions) return false;
-				const techBox = technologies.getBoundingClientRect();
-				const actionsBox = actions.getBoundingClientRect();
-				// 同一行：两个区域的垂直范围必须重叠
-				return (
-					techBox.top < actionsBox.bottom && actionsBox.top < techBox.bottom
-				);
-			}),
-		);
-
-		await expect(rowsMerged).toBe(true);
+		// 说明：数据里只剩带封面的 Shirone，「无封面卡片技术栈与源码合并同一行」
+		// 这条布局规则缺少数据样本。若日后在 data/projects.ts 追加无封面项目，
+		// 请恢复该规则的行重叠断言（历史实现见 git 记录）。
+		await expect(page.locator(".project-card--without-cover")).toHaveCount(0);
 	});
 });
 
@@ -214,7 +176,7 @@ test.describe("项目页 Swup 导航", () => {
 
 	test("从持久顶栏进入后同步页面、导航与侧栏状态", async ({ page }) => {
 		await page.goto("/skills/", { waitUntil: "domcontentloaded" });
-		await page.getByRole("button", { name: "More", exact: true }).click();
+		await page.getByRole("button", { name: "更多", exact: true }).click();
 		await page.locator('a[data-nav-key="projects"]').click();
 
 		await expect(page).toHaveURL(/\/projects\/$/);

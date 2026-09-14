@@ -7,7 +7,11 @@ import { expect, test } from "@playwright/test";
  *   在首屏应用（防闪），swup 导航由 Layout 钩子兜底；
  * - 设置面板 SegmentedButton 切换：容器类 / data 属性 / localStorage 持久；
  * - reduced-motion 下切换不产生 WAAPI 动画（FLIP 折叠为直接跳变）。
+ *
+ * 站点默认语言为 zh_CN：置顶徽标后缀为「置顶」，设置面板布局段标签为「列表 / 网格」。
  */
+/** 首页置顶文章（内容仓真实数据：guide/index.md，pinned: true） */
+const PINNED_TITLE = "使用指南";
 /** 卡片上正在播放/待播的动画数（fill:forwards 的已结束动画不计入） */
 function runningCardAnimations(): number {
 	return Array.from(document.querySelectorAll(".m3-blog-postcard"))
@@ -21,12 +25,12 @@ test.describe("文章列表布局模式", () => {
 		await page.goto("/");
 		const firstCard = page.locator(".m3-blog-postcard").first();
 		await expect(firstCard.locator(".m3-blog-postcard__title")).toContainText(
-			"Simple Guides for Fuwari",
+			PINNED_TITLE,
 		);
 		await expect(firstCard.locator(".m3-blog-postcard__pin svg")).toBeVisible();
 		await expect(firstCard.locator(".m3-blog-postcard__title")).toHaveAttribute(
 			"aria-label",
-			/Simple Guides for Fuwari, Pinned/,
+			new RegExp(`${PINNED_TITLE}, 置顶`),
 		);
 	});
 
@@ -67,7 +71,7 @@ test.describe("文章列表布局模式", () => {
 		await page.locator("#display-settings-switch").click();
 		// DisplaySettings 为 client:only 岛，等水合产物出现；radio 被
 		// 标签遮挡，点击可见段标签（真实用户路径）
-		const gridLabel = page.locator("#display-setting").getByText("Grid");
+		const gridLabel = page.locator("#display-setting").getByText("网格");
 		await gridLabel.waitFor({ state: "visible", timeout: 10_000 });
 		await gridLabel.click();
 		await expect(page.locator("#post-list")).toHaveClass(/m3e-post-list--grid/);
@@ -149,7 +153,7 @@ test.describe("文章列表布局模式", () => {
 			{ timeout: 15_000 },
 		);
 		await page.locator("#display-settings-switch").click();
-		const gridLabel = page.locator("#display-setting").getByText("Grid");
+		const gridLabel = page.locator("#display-setting").getByText("网格");
 		await gridLabel.waitFor({ state: "visible", timeout: 10_000 });
 		await gridLabel.click();
 		await expect(page.locator("#post-list")).toHaveClass(/m3e-post-list--grid/);
