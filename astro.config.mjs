@@ -184,7 +184,11 @@ export default defineConfig({
 			...(umamiIntegration ? [umamiIntegration] : []),
 			swup({
 			theme: false,
-			ignore: 'a[href="#"]',
+			// 非 http(s) 协议必须放行给浏览器原生处理。swup 默认 linkSelector 是 `a[href]`，
+			// 会把 mailto: 一起拦下 → 去 fetch("mailto:...") → ERR_ABORTED，
+			// 表现为「点邮箱没反应 / 跳空白页」，既不跳转也不唤起邮件客户端。
+			// @swup/astro 的 ignore 接受数组；不以 "/" 开头的字符串按 CSS 选择器匹配被点元素。
+			ignore: ['a[href="#"]', 'a[href^="mailto:"]', 'a[href^="tel:"]'],
 			animationClass: "transition-swup-",
 			containers: ["main", "#toc"],
 			smoothScrolling: true,

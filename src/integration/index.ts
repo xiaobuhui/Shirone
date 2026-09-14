@@ -474,7 +474,11 @@ async function createBundledIntegrations(
 		...(oddmiscIntegration ? [oddmiscIntegration] : []),
 		swup({
 			theme: false,
-			ignore: ['a[href="#"]'],
+			// 非 http(s) 协议（mailto:/tel:）必须放行给浏览器原生处理：
+			// @swup/astro 的 ignore 数组里，不以 "/" 开头的字符串按 CSS 选择器匹配被点元素，
+			// 命中即不走 Swup。swup 默认 linkSelector 是 `a[href]`，会连 mailto: 一起拦下，
+			// 然后去 fetch("mailto:...") → ERR_ABORTED，表现为「点了没反应 / 跳空白页」。
+			ignore: ['a[href="#"]', 'a[href^="mailto:"]', 'a[href^="tel:"]'],
 			animationClass: "transition-swup-",
 			containers: ["main", "#toc"],
 			smoothScrolling: true,
