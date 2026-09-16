@@ -55,17 +55,15 @@
   color: var(--error);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html:not(.motion-reduced) .m3-audio-reader__toggle {
-    transition: color var(--m3e-duration-short) var(--m3e-easing-standard);
-  }
+html:not(.motion-reduced) .m3-audio-reader__toggle {
+  transition: color var(--m3e-duration-short) var(--m3e-easing-standard);
+}
 
-  html:not(.motion-reduced)
-    .m3-audio-reader[data-audio-reader-state="playing"]
-    .m3-audio-reader__speaker {
-    animation: m3-audio-reader-wave calc(var(--m3e-duration-medium) * 3)
-      steps(1, end) infinite;
-  }
+html:not(.motion-reduced)
+  .m3-audio-reader[data-audio-reader-state="playing"]
+  .m3-audio-reader__speaker {
+  animation: m3-audio-reader-wave calc(var(--m3e-duration-medium) * 3)
+    steps(1, end) infinite;
 }
 
 @keyframes m3-audio-reader-wave {

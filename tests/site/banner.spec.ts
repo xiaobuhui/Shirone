@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 import { resolveBannerState } from "../../src/utils/banner-state";
 
 /**
@@ -584,7 +585,7 @@ test.describe("banner wallpaper", () => {
 	});
 
 	test("reduced motion keeps the initial slide static", async ({ page }) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.goto("/", { waitUntil: "domcontentloaded" });
 		await waitForBannerState(page, true);
 		await expect(
@@ -740,7 +741,7 @@ test.describe("banner wallpaper", () => {
 			async () => page.setViewportSize({ width: 390, height: 844 }),
 			async () => {
 				await page.setViewportSize({ width: 1440, height: 1000 });
-				await page.emulateMedia({ reducedMotion: "reduce" });
+				await reduceMotion(page);
 			},
 		]) {
 			await setup();

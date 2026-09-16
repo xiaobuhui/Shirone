@@ -187,10 +187,8 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.custom-md .m3-option-group__tab {
-		transition-duration: 0ms;
-	}
+html.motion-reduced .custom-md .m3-option-group__tab {
+	transition-duration: 0ms;
 }
 
 @media print {

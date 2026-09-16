@@ -317,4 +317,11 @@ export const es: Translation = {
 		"Añade esta URL a tu lector RSS/Atom favorito (como NetNewsWire, Feedly, Inoreader o Follow) para recibir actualizaciones.",
 	[Key.feedOpenXml]: "Ver XML original",
 	[Key.feedRecentPosts]: "Artículos recientes del canal",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "Es tarde, bienvenido a mi blog",
+	[Key.openingGreetingMorning]: "Buenos días, bienvenido a mi blog",
+	[Key.openingGreetingNoon]: "Buenas tardes, bienvenido a mi blog",
+	[Key.openingGreetingAfternoon]: "Buenas tardes, bienvenido a mi blog",
+	[Key.openingGreetingEvening]: "Buenas noches, bienvenido a mi blog",
+	[Key.replayOpeningAnimation]: "Reproducir de nuevo la animación de apertura",
 };

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 import { siteMarkdownProcessor } from "../../src/utils/markdown-processor.mjs";
 
 // Render issue #44 through the production processor, then exercise the actual
@@ -26,7 +27,7 @@ for (const navigation of ["direct", "swup"]) {
 	test(`KaTeX boxes, negations and vector accents (${navigation})`, async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.route("https://api.github.com/**", (route) =>
 			route.fulfill({ status: 503, body: "Unavailable" }),
 		);

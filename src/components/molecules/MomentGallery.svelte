@@ -504,8 +504,4 @@ $effect(() => {
 
 :global(html.motion-reduced) .moment-viewer__stage-btn > img
 	transition: none
-
-@media (prefers-reduced-motion: reduce)
-	.moment-viewer__stage-btn > img
-		transition: none
 </style>

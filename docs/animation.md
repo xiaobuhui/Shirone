@@ -20,10 +20,11 @@
 
 ## 2. 动效降级（Reduce Motion）
 
-站内两套开关，动画一律遵守：
+**只有一个开关**：站点显示设置里的「减少动态效果」（`html.motion-reduced`，持久化键 `mc-motion`）。
 
-- **系统**：`prefers-reduced-motion: reduce` 媒体查询；
-- **站点手动**：`html.motion-reduced`（设置面板「Reduce motion」开关）。
+- 由 `src/layouts/Layout.astro` 的内联启动脚本在首屏前写入，所以第一帧就已经是降级态；
+- 控制面板入口：`DisplaySettings.svelte`（`setMotionPreference()` 写 localStorage + 根 class）；
+- **刻意不读系统 `prefers-reduced-motion`**（项目决定，2026-09-16）——访客的操作系统设置不影响本站动效，全站动效只由这一个开关决定。因此**不要**新增 `@media (prefers-reduced-motion: ...)` 规则。
 
 统一用 `prefersReducedMotion()`（`src/utils/motion.ts`）检测，降级时动画直接到位、不播过渡。
 

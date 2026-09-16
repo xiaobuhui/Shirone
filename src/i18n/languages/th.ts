@@ -303,4 +303,11 @@ export const th: Translation = {
 		"เพิ่ม URL ฟีดด้านบนลงในโปรแกรมอ่าน RSS/Atom (เช่น NetNewsWire, Feedly, Inoreader, Follow) เพื่อรับการแจ้งเตือนบทความใหม่",
 	[Key.feedOpenXml]: "ดู XML ต้นฉบับ",
 	[Key.feedRecentPosts]: "บทความล่าสุดในฟีด",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "ดึกแล้ว ยินดีต้อนรับสู่บล็อกของฉัน",
+	[Key.openingGreetingMorning]: "สวัสดีตอนเช้า ยินดีต้อนรับสู่บล็อกของฉัน",
+	[Key.openingGreetingNoon]: "สวัสดีตอนเที่ยง ยินดีต้อนรับสู่บล็อกของฉัน",
+	[Key.openingGreetingAfternoon]: "สวัสดีตอนบ่าย ยินดีต้อนรับสู่บล็อกของฉัน",
+	[Key.openingGreetingEvening]: "สวัสดีตอนเย็น ยินดีต้อนรับสู่บล็อกของฉัน",
+	[Key.replayOpeningAnimation]: "เล่นแอนิเมชันเปิดอีกครั้ง",
 };

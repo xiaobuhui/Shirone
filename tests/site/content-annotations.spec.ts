@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 const POST_PATH = "/posts/content-annotations/";
 
@@ -65,7 +66,7 @@ test.describe("Markdown content annotations", () => {
 	test("keeps long notes anchored and contained on mobile", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.setViewportSize({ width: 390, height: 844 });
 		const article = await openPost(page);
 		const trigger = article.locator(".m3-content-note__trigger").nth(1);

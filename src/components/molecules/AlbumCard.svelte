@@ -162,8 +162,4 @@ let { album }: { album: AlbumIndexItem } = $props();
 
 :global(html.motion-reduced) .album-card
 	transition: none
-
-@media (prefers-reduced-motion: reduce)
-	.album-card
-		transition: none
 </style>

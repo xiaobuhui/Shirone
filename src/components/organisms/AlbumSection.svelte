@@ -215,10 +215,4 @@ onMount(() => {
 
 :global(html.motion-reduced) .album-section__loading
 	transition: none
-
-@media (prefers-reduced-motion: reduce)
-	.album-section__item
-		animation: none
-	.album-section__loading
-		transition: none
 </style>

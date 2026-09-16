@@ -1,6 +1,6 @@
 /**
  * 最小动效补丁插件（M3E）。
- * - prefersReducedMotion()：统一「系统偏好 / 站点手动开关」的动效降级检测；
+ * - prefersReducedMotion()：动效降级检测 —— 只看站点显示设置里的「减少动态效果」；
  * - collapse：Svelte action，高度 0↔auto 的展开/折叠动画，
  *   WAAPI 驱动（可取消、无逐帧 rAF 开销），reduced-motion 时直接到位；
  * - reveal：Svelte action，淡入上移的入场动画（列表 stagger 用），
@@ -11,13 +11,13 @@
  * - observeLayoutShifts：短生命周期布局变化的通用 FLIP 观察器。
  */
 
-/** 是否应降级动效：系统 prefers-reduced-motion 或站点手动开关（html.motion-reduced） */
+/**
+ * 是否应降级动效：**只看**站点显示设置里的「减少动态效果」（html.motion-reduced）。
+ * 刻意不读系统 prefers-reduced-motion —— 按项目决定，全站动效只由这一个开关决定。
+ */
 export function prefersReducedMotion(): boolean {
-	if (typeof window === "undefined") return false;
-	return (
-		window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ||
-		document.documentElement.classList.contains("motion-reduced")
-	);
+	if (typeof document === "undefined") return false;
+	return document.documentElement.classList.contains("motion-reduced");
 }
 
 /** Wait for layout-affecting CSS transitions on an element to settle. */

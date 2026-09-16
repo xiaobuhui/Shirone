@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 const POST_PATH = "/posts/option-groups/";
 
@@ -57,7 +58,7 @@ test.describe("Markdown option groups", () => {
 	test("keeps long option labels in one compact scrollable row", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.setViewportSize({ width: 390, height: 844 });
 		const groups = await openPost(page);
 		const manyOptions = groups.nth(2);

@@ -319,4 +319,11 @@ export const id: Translation = {
 		"Tambahkan URL umpan di atas ke pembaca RSS/Atom favorit Anda (seperti NetNewsWire, Feedly, Inoreader, Follow) untuk menerima pembaruan.",
 	[Key.feedOpenXml]: "Lihat XML Asli",
 	[Key.feedRecentPosts]: "Artikel Terbaru di Umpan",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "Sudah larut, selamat datang di blog saya",
+	[Key.openingGreetingMorning]: "Selamat pagi, selamat datang di blog saya",
+	[Key.openingGreetingNoon]: "Selamat siang, selamat datang di blog saya",
+	[Key.openingGreetingAfternoon]: "Selamat sore, selamat datang di blog saya",
+	[Key.openingGreetingEvening]: "Selamat malam, selamat datang di blog saya",
+	[Key.replayOpeningAnimation]: "Putar ulang animasi pembuka",
 };

@@ -64,10 +64,8 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.m3-abbreviation__popover {
-		transition: none;
-	}
+html.motion-reduced .m3-abbreviation__popover {
+	transition: none;
 }
 
 @media print {

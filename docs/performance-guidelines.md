@@ -56,7 +56,7 @@ Shirone 遵循 **「内容先行、布局稳定、平滑渐显、按需水合、
   - 缓动：`--m3e-easing-standard`、`--m3e-easing-emphasized-decelerate` 等；
   - 严禁散落手写未对齐的 `transition: all 0.3s`。
 - **页面切换平滑滚动**：Swup 保持 `smoothScrolling: true` 配合 `transition-swup-` 贝塞尔过渡，保证切页时平滑自然回到顶部。
-- **减弱动效强制静止**：所有动画及过渡必须通过 `@media (prefers-reduced-motion: reduce)` 或 `prefersReducedMotion()` 提供直接跳变终态，不产生动画残留。
+- **减弱动效强制静止**：所有动画及过渡必须在站点「减少动态效果」开关（`html.motion-reduced`）下提供直接跳变终态，不产生动画残留；统一用 `prefersReducedMotion()` / `html.motion-reduced <选择器>`，**不再使用** `@media (prefers-reduced-motion: reduce)`（主题刻意不读系统偏好）。
 
 ### 2.5 构建管线与资源预算准则（包体瘦身与离线自律）
 

@@ -55,7 +55,7 @@
 
 无障碍降级与打印输出可以在局部状态根下使用 `!important`，例如强制关闭第三方动画、过渡或隐藏纯交互控件。必须满足：
 
-- 规则位于 `prefers-reduced-motion`、项目的 reduced-motion 根状态或 `@media print` 中；
+- 规则位于项目的 reduced-motion 根状态（`html.motion-reduced`，站点「减少动态效果」开关）或 `@media print` 中；
 - 普通级联无法覆盖第三方内联或生成声明；
 - 不借机改写与偏好无关的颜色、排版或布局。
 

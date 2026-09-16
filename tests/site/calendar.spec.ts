@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 /**
  * 侧栏日历 widget 回归：
@@ -132,7 +133,7 @@ test.describe("sidebar calendar widget", () => {
 	});
 
 	test("reduced motion toggles instantly", async ({ page }) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await openHome(page);
 		await gotoMonth(page, "May 2024");
 

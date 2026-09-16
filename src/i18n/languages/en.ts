@@ -315,4 +315,11 @@ export const en: Translation = {
 		"Add this feed URL to your favorite RSS/Atom reader (e.g. NetNewsWire, Feedly, Inoreader, Follow) to get instant updates.",
 	[Key.feedOpenXml]: "View Raw XML",
 	[Key.feedRecentPosts]: "Recent Posts in Feed",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "It's late — welcome to my blog",
+	[Key.openingGreetingMorning]: "Good morning, welcome to my blog",
+	[Key.openingGreetingNoon]: "Good afternoon, welcome to my blog",
+	[Key.openingGreetingAfternoon]: "Good afternoon, welcome to my blog",
+	[Key.openingGreetingEvening]: "Good evening, welcome to my blog",
+	[Key.replayOpeningAnimation]: "Replay opening animation",
 };

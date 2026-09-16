@@ -121,13 +121,6 @@ html[data-texture-preset="sakura"] #m3e-texture-canvas {
 	}
 }
 
-/* Reduced Motion 动效降级 */
-@media (prefers-reduced-motion: reduce) {
-	#m3e-texture-canvas {
-		animation: none !important;
-	}
-}
-
 html.motion-reduced #m3e-texture-canvas {
 	animation: none !important;
 }

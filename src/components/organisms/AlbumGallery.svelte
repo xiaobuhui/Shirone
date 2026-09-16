@@ -171,8 +171,4 @@ function ratio(photo: AlbumPhoto): string {
 
 :global(html.motion-reduced) .album-gallery__item > img
 	transition: none
-
-@media (prefers-reduced-motion: reduce)
-	.album-gallery__item > img
-		transition: none
 </style>

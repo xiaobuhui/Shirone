@@ -7,7 +7,7 @@
  *   applyStoredLayoutMode 兜底；
  * - DisplaySettings 面板切换走 flipToMode：先记录各卡片位置，切类重排后
  *   从旧位置平移到新位置（transform-only 的 FLIP，M3E Expressive 的
- *   「切换即动效」表达），prefers-reduced-motion 时直接跳变。
+ *   「切换即动效」表达），站点「减少动态效果」开关命中时直接跳变。
  */
 import { postListConfig } from "@/config/postListConfig";
 import type { PostListMode } from "@/types/postListConfig";

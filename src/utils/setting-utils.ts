@@ -178,7 +178,7 @@ export function getStoredTheme(): LIGHT_DARK_MODE {
 
 const MOTION_KEY = "mc-motion";
 
-/** 是否开启「减少动态效果」（手动覆盖 prefers-reduced-motion） */
+/** 是否开启「减少动态效果」—— 全站动效的唯一开关（不再读系统 prefers-reduced-motion） */
 export function getMotionPreference(): boolean {
 	return localStorage.getItem(MOTION_KEY) === "reduced";
 }

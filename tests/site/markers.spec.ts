@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 const POST_PATH = "/posts/marker-highlights/";
 
@@ -62,7 +63,7 @@ test.describe("Markdown marker highlights", () => {
 	test("wraps within a narrow article without horizontal overflow", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.setViewportSize({ width: 390, height: 844 });
 		const markers = await openPost(page);
 

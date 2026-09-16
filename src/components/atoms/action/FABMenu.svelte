@@ -59,13 +59,11 @@ let {
 
 const instanceId = nextMenuInstanceId();
 
-// 动效降级：系统偏好或站点手动开关（html.motion-reduced）→ 展开/收起直接到位
+// 动效降级：只看站点显示设置里的「减少动态效果」→ 展开/收起直接到位
+// （与 @utils/motion 的 prefersReducedMotion 同一语义，刻意不读系统偏好）
 function isMotionReduced(): boolean {
-	if (typeof window === "undefined") return false;
-	return (
-		window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ||
-		document.documentElement.classList.contains("motion-reduced")
-	);
+	if (typeof document === "undefined") return false;
+	return document.documentElement.classList.contains("motion-reduced");
 }
 
 // 展开进度 0→1，rAF 逐帧驱动（官方 checkedProgress，FastSpatial ~300ms）

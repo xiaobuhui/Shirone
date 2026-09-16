@@ -676,12 +676,10 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.custom-md .m3-file-tree__row,
-	.custom-md .m3-code-tree__dir-label,
-	.custom-md .m3-code-tree__file-btn,
-	.m3-code-tree-dialog {
-		transition: none;
-		animation: none;
-	}
+html.motion-reduced .custom-md .m3-file-tree__row,
+html.motion-reduced .custom-md .m3-code-tree__dir-label,
+html.motion-reduced .custom-md .m3-code-tree__file-btn,
+html.motion-reduced .m3-code-tree-dialog {
+	transition: none;
+	animation: none;
 }

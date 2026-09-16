@@ -427,10 +427,4 @@ html.motion-reduced .music-player__cover,
 html.motion-reduced .music-player__cover::before,
 html.motion-reduced .music-player__cover img
 	animation: none
-
-@media (prefers-reduced-motion: reduce)
-	.music-player__cover,
-	.music-player__cover::before,
-	.music-player__cover img
-		animation: none
 `;

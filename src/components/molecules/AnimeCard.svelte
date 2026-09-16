@@ -332,11 +332,4 @@ const metaLine = $derived(
 :global(html.motion-reduced) .anime-card__play
 	transition: none
 	transform: none
-
-@media (prefers-reduced-motion: reduce)
-	.anime-card,
-	.anime-card__cover-img,
-	.anime-card__play
-		transition: none
-		transform: none
 </style>

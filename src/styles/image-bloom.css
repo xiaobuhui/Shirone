@@ -38,15 +38,13 @@
 	opacity: 1;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.image-bloom-layer,
-	.image-bloom-img {
-		transition: none !important;
-	}
-	.image-bloom-img {
-		opacity: 1 !important;
-	}
-	.image-bloom-layer {
-		display: none !important;
-	}
+html.motion-reduced .image-bloom-layer,
+html.motion-reduced .image-bloom-img {
+	transition: none !important;
+}
+html.motion-reduced .image-bloom-img {
+	opacity: 1 !important;
+}
+html.motion-reduced .image-bloom-layer {
+	display: none !important;
 }

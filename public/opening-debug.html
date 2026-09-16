@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>开场动画诊断</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0; padding: 24px;
+    font: 14px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+    background: #faf7f2; color: #2b2622;
+  }
+  h1 { font-size: 18px; margin: 0 0 4px; font-family: system-ui, sans-serif; }
+  .sub { color: #6b625a; margin-bottom: 20px; font-size: 12px; }
+  .verdict {
+    font-family: system-ui, sans-serif; font-size: 16px; font-weight: 700;
+    padding: 14px 16px; border-radius: 12px; margin-bottom: 20px;
+  }
+  .ok { background: #e3f2e5; color: #14532d; border: 1px solid #a7d8b0; }
+  .bad { background: #fde8e4; color: #7a1c10; border: 1px solid #f3b3a6; }
+  table { border-collapse: collapse; width: 100%; max-width: 900px; margin-bottom: 20px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #e6ded4; vertical-align: top; }
+  th { width: 300px; font-weight: 600; font-family: system-ui, sans-serif; color: #4a423b; }
+  td { font-weight: 700; word-break: break-all; }
+  .yes { color: #b3261e; }
+  .no  { color: #146c2e; }
+  .mut { color: #6b625a; font-weight: 400; }
+  button {
+    font: inherit; padding: 10px 16px; margin-right: 10px; cursor: pointer;
+    border: 1px solid #b9ad9f; border-radius: 10px; background: #fff; color: #2b2622;
+  }
+  button:hover { background: #f2ece4; }
+</style>
+</head>
+<body>
+<h1>开场动画诊断</h1>
+<p class="sub">临时页面，只为排查用。要在<strong>刚刚没播动画的那个标签页</strong>里访问它 —— 直接把地址栏结尾改成 <code>/opening-debug.html</code> 回车，别新开标签页（新标签页的会话存储是空的，会读不准）。</p>
+
+<div id="verdict" class="verdict">&nbsp;</div>
+
+<table id="rows"></table>
+
+<div>
+  <button id="clear">清空会话标记</button>
+  <button id="go">回首页看效果</button>
+  <button id="reload">刷新本页</button>
+</div>
+
+<p class="sub" style="margin-top:20px">
+  说明：<code>hasSeenOpening()</code> 为 true 或 <code>prefersReducedMotion()</code> 为 true 时，首页会<strong>直接把遮罩撤掉、不做动画</strong>。
+</p>
+
+<script>
+(function () {
+  var SEEN_KEY = "shirone-opening-played.v1";
+
+  var seenRaw = sessionStorage.getItem(SEEN_KEY);
+  var seen = seenRaw === "1";
+  var mcMotion = localStorage.getItem("mc-motion");
+  var systemReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var clsReduced = document.documentElement.classList.contains("motion-reduced");
+  var reduced = systemReduced || clsReduced;
+  var willPlay = !seen && !reduced;
+
+  var v = document.getElementById("verdict");
+  if (willPlay) {
+    v.className = "verdict ok";
+    v.innerHTML = "按当前状态，首页<b>应该会播</b>开场动画。<br>如果它偏偏不播，说明问题不在下面这几项，请把本页截图发我。";
+  } else {
+    v.className = "verdict bad";
+    v.innerHTML = "按当前状态，首页<b>不会播</b>开场动画。" +
+      (seen ? "<br>→ 原因：这个标签页被认为「已经播过了」（会话标记已存在）。" : "") +
+      (reduced ? "<br>→ 原因：检测到要求减弱动效。" : "");
+  }
+
+  function row(k, val, extra) {
+    var tr = document.createElement("tr");
+    var th = document.createElement("th");
+    th.innerHTML = k;
+    var td = document.createElement("td");
+    td.innerHTML = val + (extra ? ' <span class="mut">' + extra + "</span>" : "");
+    tr.appendChild(th); tr.appendChild(td);
+    document.getElementById("rows").appendChild(tr);
+  }
+
+  row("hasSeenOpening()", '<span class="' + (seen ? "yes" : "no") + '">' + seen + "</span>",
+      "sessionStorage[" + SEEN_KEY + "] = " + (seenRaw === null ? "null（没写）" : JSON.stringify(seenRaw)));
+  row("prefersReducedMotion()", '<span class="' + (reduced ? "yes" : "no") + '">' + reduced + "</span>");
+  row("&nbsp;&nbsp;├ 系统 prefers-reduced-motion", '<span class="' + (systemReduced ? "yes" : "no") + '">' + systemReduced + "</span>");
+  row("&nbsp;&nbsp;└ html.motion-reduced 类", '<span class="' + (clsReduced ? "yes" : "no") + '">' + clsReduced + "</span>",
+      "localStorage['mc-motion'] = " + (mcMotion === null ? "null（没写）" : JSON.stringify(mcMotion)));
+  row("→ 首页会播吗", willPlay ? '<span class="no">会</span>' : '<span class="yes">不会（会被跳过）</span>');
+
+  row("viewport", window.innerWidth + " × " + window.innerHeight);
+  row("userAgent", "<span class='mut'>" + navigator.userAgent + "</span>");
+  row("本页是 /opening-debug.html", "遮罩节点数 = " + document.querySelectorAll(".opening-cinema").length +
+      ' <span class="mut">（本页不是首页，正常应为 0）</span>');
+
+  document.getElementById("clear").onclick = function () {
+    sessionStorage.removeItem(SEEN_KEY);
+    location.reload();
+  };
+  document.getElementById("go").onclick = function () { location.href = "/"; };
+  document.getElementById("reload").onclick = function () { location.reload(); };
+})();
+</script>
+</body>
+</html>

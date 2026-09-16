@@ -125,10 +125,8 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.custom-md .m3-collapse .m3-disclosure__indicator {
-		transition-duration: 0ms;
-	}
+html.motion-reduced .custom-md .m3-collapse .m3-disclosure__indicator {
+	transition-duration: 0ms;
 }
 
 @media print {

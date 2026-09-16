@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 const POST_PATH = "/posts/markdown-enhancements/";
 
@@ -180,7 +181,7 @@ test.describe("Markdown interactive code trees", () => {
 	test("supports narrow mobile viewport layout without horizontal page overflow", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.setViewportSize({ width: 390, height: 844 });
 
 		const codeTrees = await openPost(page);
@@ -394,7 +395,7 @@ test.describe("Markdown interactive code trees", () => {
 	test("uses the full mobile viewport without empty modal columns or rows", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.setViewportSize({ width: 390, height: 844 });
 		const codeTrees = await openPost(page);
 		await codeTrees.first().locator(".m3-code-tree__expand-btn").click();

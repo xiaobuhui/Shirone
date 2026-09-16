@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 const POST_PATH = "/posts/admonitions/";
 
@@ -84,7 +85,7 @@ test.describe("Markdown admonitions", () => {
 	test("contains rich content within a narrow article viewport", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.setViewportSize({ width: 390, height: 844 });
 		const admonitions = await openPost(page);
 		await page.locator("details.m3-admonition > summary").click();

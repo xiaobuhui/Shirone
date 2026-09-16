@@ -30,8 +30,9 @@
 1. **动效必须走设计令牌**
    - 严禁随意手写 `transition: all 0.3s` 或未定义贝塞尔曲线；
    - 必须使用 `--m3e-duration-*` 与 `--m3e-easing-*`。
-2. **全站动效必须支持 `prefers-reduced-motion`**
-   - CSS 必须包含 `@media (prefers-reduced-motion: reduce)` 规则；
+2. **全站动效必须支持站点「减少动态效果」开关**
+   - 降级口径**只认** `html.motion-reduced`（显示设置里的开关），**不读**系统 `prefers-reduced-motion`（项目决定，2026-09-16）；
+   - CSS 必须为每处动效写 `html.motion-reduced <选择器>` 静默规则（项目已不再使用 `@media (prefers-reduced-motion: reduce)`）；
    - JS/WAAPI 驱动的动画必须先调用 `prefersReducedMotion()` 检查并直接返回终态。
 
 ---

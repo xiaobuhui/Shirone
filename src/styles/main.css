@@ -147,21 +147,10 @@
     height: var(--collapsedHeight);
 }
 
-/* 减少动态效果：手动开关（html.motion-reduced）或系统偏好（prefers-reduced-motion）
+/* 减少动态效果：站点显示设置里的开关（html.motion-reduced）。
+   项目决定不读系统 prefers-reduced-motion —— 这个开关是全站动效的唯一来源。
    统一将 transition/animation 时长压至 0.01ms，保留状态结果、去掉过程动效；
    stagger 的 delay 一并归零，避免元素在延迟期间保持起始态不可见 */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        transition-duration: 0.01ms !important;
-        transition-delay: 0ms !important;
-        animation-duration: 0.01ms !important;
-        animation-delay: 0ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-    }
-}
 
 html.motion-reduced *,
 html.motion-reduced *::before,

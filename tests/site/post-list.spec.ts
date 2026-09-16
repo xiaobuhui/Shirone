@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 /**
  * 文章列表布局模式（list/grid）锁定：
@@ -138,7 +139,7 @@ test.describe("文章列表布局模式", () => {
 	test("reduced-motion：切换无 WAAPI 动画（FLIP 折叠为直接跳变）", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.goto("/");
 		// 等 onload stagger 动画（含延迟阶段）全部收敛，避免基线误报
 		await page.waitForFunction(

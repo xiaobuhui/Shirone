@@ -122,7 +122,7 @@ npx.cmd playwright test      # site 级全量测试
 ## 10. 视觉样式原则（后续接入时）
 
 1. 装饰层与组件层物理隔离（`features/` 层，默认关闭、零开销）；
-2. 装饰必须尊重 `prefers-reduced-motion`；
+2. 装饰必须尊重站点「减少动态效果」开关（`html.motion-reduced`）；
 3. 装饰色值 token 化，跟随主题色相，不写死粉色；
 4. 最小补丁 + 高性能，不引入重依赖。
 
@@ -136,7 +136,7 @@ npx.cmd playwright test      # site 级全量测试
 
 1. **SSR-First 内容直出**：页面主体必须在服务端生成完整静态 HTML，严禁在页面级容器滥用 `client:only`；
 2. **图片与布局防抖**：所有图片容器必须预设稳定宽高比或尺寸，接入 Tonal Bloom 色调辉光占位，消除 CLS 布局偏移；
-3. **动效自律与平衡**：全站过渡必须走 M3E 动效令牌，兼顾切页平滑滚动与高帧率，严格支持 `prefers-reduced-motion` 降级；
+3. **动效自律与平衡**：全站过渡必须走 M3E 动效令牌，兼顾切页平滑滚动与高帧率，严格支持站点「减少动态效果」开关（`html.motion-reduced`）降级；
 4. **零额外负担与纯净构建**：可选功能关闭时 0 DOM / 0 请求 / 0 bundle 增加，构建期零外部网络强依赖；
 5. **量化验证**：改动后执行 `pnpm.cmd run perf:measure`，确保 LCP < 500ms、CLS < 0.05。
 

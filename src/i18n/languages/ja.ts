@@ -315,4 +315,11 @@ export const ja: Translation = {
 		"上記の購読 URL をお好みの RSS/Atom リーダー（NetNewsWire、Feedly、Inoreader、Follow など）に登録すると、最新記事が通知されます。",
 	[Key.feedOpenXml]: "XML を直接表示",
 	[Key.feedRecentPosts]: "最新の配信記事",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "夜更かしですね、私のブログへようこそ",
+	[Key.openingGreetingMorning]: "おはようございます、私のブログへようこそ",
+	[Key.openingGreetingNoon]: "こんにちは、私のブログへようこそ",
+	[Key.openingGreetingAfternoon]: "こんにちは、私のブログへようこそ",
+	[Key.openingGreetingEvening]: "こんばんは、私のブログへようこそ",
+	[Key.replayOpeningAnimation]: "オープニングアニメーションを再生",
 };

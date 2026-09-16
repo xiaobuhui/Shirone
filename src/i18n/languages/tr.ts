@@ -318,4 +318,11 @@ export const tr: Translation = {
 		"Yeni yazı bildirimleri almak için yukarıdaki bağlantıyı dilediğiniz RSS/Atom okuyucusuna (NetNewsWire, Feedly, Inoreader, Follow vb.) ekleyin.",
 	[Key.feedOpenXml]: "Ham XML'i Görüntüle",
 	[Key.feedRecentPosts]: "Akıştaki Son Yazılar",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "Gece geç oldu, bloguma hoş geldiniz",
+	[Key.openingGreetingMorning]: "Günaydın, bloguma hoş geldiniz",
+	[Key.openingGreetingNoon]: "İyi günler, bloguma hoş geldiniz",
+	[Key.openingGreetingAfternoon]: "Tünaydın, bloguma hoş geldiniz",
+	[Key.openingGreetingEvening]: "İyi akşamlar, bloguma hoş geldiniz",
+	[Key.replayOpeningAnimation]: "Açılış animasyonunu yeniden oynat",
 };

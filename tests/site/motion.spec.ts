@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 /**
  * 动效回归锁定（归档页年份折叠，use:collapse 插件）：
  * - 正常模式：展开/收起播放高度过渡（动画期间为中间值）；
- * - Reduce Motion（系统 + 站点开关）：直接到位、不播动画；
+ * - 站点「减少动态效果」开关：直接到位、不播动画（只认站点开关，不读系统偏好）；
  * - aria-expanded 与内容显隐正确。
  *
  * 站点默认语言为 zh_CN：分组切换名「归档分组」、年份组第二组为 2024（3 篇文章）、
@@ -168,7 +169,7 @@ test.describe("Site motion", () => {
 	test("reduced motion lands instantly without transition", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await openArchive(page);
 
 		expect(await bodyHeight(page, 1)).toBe(0);
@@ -247,7 +248,7 @@ test.describe("layout shift motion primitive", () => {
 	});
 
 	test("snaps without animation when motion is reduced", async ({ page }) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.goto("/archive/");
 		const animationCount = await page.evaluate(async () => {
 			const { observeLayoutShifts } = await import("/src/utils/motion.ts");
@@ -420,7 +421,7 @@ test.describe("sidebar pages filter (swup sync)", () => {
 	});
 
 	test("reduced motion lands instantly without fade", async ({ page }) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.goto("/", { waitUntil: "networkidle" });
 
 		await clickLink(page, '#swup-container a[href^="/posts/"]');

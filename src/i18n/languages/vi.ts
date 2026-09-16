@@ -317,4 +317,11 @@ export const vi: Translation = {
 		"Thêm URL nguồn cấp ở trên vào trình đọc RSS/Atom yêu thích của bạn (như NetNewsWire, Feedly, Inoreader, Follow) để nhận thông báo bài viết mới.",
 	[Key.feedOpenXml]: "Xem XML gốc",
 	[Key.feedRecentPosts]: "Bài viết mới nhất trong nguồn cấp",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "Đã khuya rồi, chào mừng đến với blog của tôi",
+	[Key.openingGreetingMorning]: "Chào buổi sáng, chào mừng đến với blog của tôi",
+	[Key.openingGreetingNoon]: "Chào buổi trưa, chào mừng đến với blog của tôi",
+	[Key.openingGreetingAfternoon]: "Chào buổi chiều, chào mừng đến với blog của tôi",
+	[Key.openingGreetingEvening]: "Chào buổi tối, chào mừng đến với blog của tôi",
+	[Key.replayOpeningAnimation]: "Phát lại hoạt ảnh mở đầu",
 };

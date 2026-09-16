@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 import { contextMenuConfig } from "../../src/config/contextMenuConfig";
 import I18nKey from "../../src/i18n/i18nKey";
 import { en } from "../../src/i18n/languages/en";
@@ -185,7 +186,7 @@ test.describe("desktop context menu", () => {
 	test("returns to the top and keeps native editable menus untouched", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.evaluate(() => window.scrollTo(0, 800));
 		await expect
 			.poll(() => page.evaluate(() => window.scrollY))

@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 const POST_PATH = "/posts/collapse-panels/";
 
@@ -74,7 +75,7 @@ test.describe("Markdown collapse panels", () => {
 	test("contains open rich content within a narrow article viewport", async ({
 		page,
 	}) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.setViewportSize({ width: 390, height: 844 });
 		const groups = await openPost(page);
 		await expect(groups).toHaveCount(2);

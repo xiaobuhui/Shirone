@@ -1,11 +1,12 @@
 import { expect, test } from "@playwright/test";
+import { reduceMotion } from "../fixtures/motion";
 
 /**
  * 真实站点页面视觉回归（黄金截图）。
  * 锁定首页 / 归档 / 关于 / 文章页在 light / dark 双模式下的整体布局、圆角、阴影，
  * 以及首页 grid 布局模式（访客偏好注入）。
  * 说明：
- * - 用 prefers-reduced-motion 折叠 onload/主题过渡动画，保证截图确定性
+ * - 用站点「减少动态效果」开关（reduceMotion）折叠 onload/主题过渡动画，保证截图确定性
  *   （动画最终态 opacity 1 / transform none，与正常渲染视觉一致）。
  * - GitHub 卡片 API mock 为固定响应，避免限流导致骨架屏截屏抖动。
  * - 首次生成黄金图：npx playwright test tests/site/visual.spec.ts --update-snapshots
@@ -52,7 +53,7 @@ async function captureAndCompare(
 			...(p.layout ? { "post-list-mode": p.layout } : {}),
 		},
 	);
-	await page.emulateMedia({ reducedMotion: "reduce" });
+	await reduceMotion(page);
 	await page.route("https://api.github.com/**", (route) =>
 		route.fulfill({
 			status: 200,

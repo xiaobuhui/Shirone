@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page, Request } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { allowMotion, reduceMotion } from "../fixtures/motion";
 
 const PLAIN_POST_PATH = "/posts/admonitions/";
 const RICH_POST_PATH = "/posts/mdx-showcase/";
@@ -240,12 +241,12 @@ test.describe("Markdown syntax runtime loading", () => {
 			"animation-name",
 			"m3-audio-reader-wave",
 		);
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await expect(reader.locator(".m3-audio-reader__speaker")).toHaveCSS(
 			"animation-name",
 			"none",
 		);
-		await page.emulateMedia({ reducedMotion: "no-preference" });
+		await allowMotion(page);
 		await page.evaluate(() =>
 			document.documentElement.classList.add("motion-reduced"),
 		);

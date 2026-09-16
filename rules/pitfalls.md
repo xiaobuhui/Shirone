@@ -354,7 +354,17 @@ pnpm.cmd astro dev --port 4321
 
 **根因**：主题引擎写入 `--mc-*` 后组件颜色带 transition。
 
-**解法**：`openTestPage` 里已等待 `--mc-primary` 写入 + 350ms；视觉回归用 `emulateMedia({ reducedMotion: "reduce" })` 折叠动画。
+**解法**：`openTestPage` 里已等待 `--mc-primary` 写入 + 350ms；视觉回归用 `reduceMotion(page)`（`tests/fixtures/motion.ts`）折叠动画。
+
+---
+
+### 5.1.1 Playwright 默认伪造 `prefers-reduced-motion: no-preference`
+
+**现象**：自动化测试里读到的 `matchMedia("(prefers-reduced-motion: reduce)").matches` 永远是 `false`，与本机系统设置无关。
+
+**根因**：Playwright 在创建 context 时通过 CDP `Emulation.setEmulatedMedia` **默认注入** `prefers-reduced-motion: no-preference`（见 `playwright-core` 的 `coreBundle.js`）。这是宿主进程之外的第二层覆盖，`emulateMedia({ reducedMotion: "reduce" })` 只能把它改成 reduce，**关不掉**。
+
+**解法**：要读真实系统偏好必须 `browser.newContext({ reducedMotion: null })`。本站动效已改为只认站点开关，测试统一走 `tests/fixtures/motion.ts` 的 `reduceMotion()` / `allowMotion()`，不再依赖媒体查询。
 
 ---
 

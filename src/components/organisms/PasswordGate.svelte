@@ -370,7 +370,6 @@ async function unlock() {
 		&__heading
 			gap: var(--m3e-space-3)
 
-@media (prefers-reduced-motion: reduce)
-	.password-gate--loading :global(.password-gate__submit .m3-button__icon)
-		animation: none
+:global(html.motion-reduced) .password-gate--loading :global(.password-gate__submit .m3-button__icon)
+	animation: none
 </style>

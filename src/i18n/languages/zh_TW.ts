@@ -304,4 +304,11 @@ export const zh_TW: Translation = {
 		"將上方訂閱網址新增至任意 RSS/Atom 閱讀器（如 NetNewsWire、Feedly、Inoreader、Follow 等），即可即時接收新文章推送。",
 	[Key.feedOpenXml]: "檢視原始 XML",
 	[Key.feedRecentPosts]: "最新推送文章",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "夜深了，歡迎來到我的個人部落格",
+	[Key.openingGreetingMorning]: "早安，歡迎來到我的個人部落格",
+	[Key.openingGreetingNoon]: "午安，歡迎來到我的個人部落格",
+	[Key.openingGreetingAfternoon]: "下午好，歡迎來到我的個人部落格",
+	[Key.openingGreetingEvening]: "晚安，歡迎來到我的個人部落格",
+	[Key.replayOpeningAnimation]: "重播開場動畫",
 };

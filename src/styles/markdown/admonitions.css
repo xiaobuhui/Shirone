@@ -180,8 +180,6 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.custom-md .m3-admonition__chevron {
-		transition-duration: 0ms;
-	}
+html.motion-reduced .custom-md .m3-admonition__chevron {
+	transition-duration: 0ms;
 }

@@ -31,7 +31,7 @@
 
 截图前必须：
 
-1. **折叠动效**：`page.emulateMedia({ reducedMotion: "reduce" })`——把 onload/主题过渡折叠为 0.01ms，保证每次渲染到相同最终态（最终态 opacity 1 / transform none，与正常渲染视觉一致）；
+1. **折叠动效**：`await reduceMotion(page)`（`tests/fixtures/motion.ts`；写 `localStorage["mc-motion"]="reduced"`，由内联启动脚本在首屏前加上 `html.motion-reduced`）——把 onload/主题过渡折叠为 0.01ms，保证每次渲染到相同最终态（最终态 opacity 1 / transform none，与正常渲染视觉一致）。⚠️ 不要用 `page.emulateMedia({ reducedMotion })`：主题刻意不读系统偏好，那种写法对本站已完全无效；
 2. **mock 外部 API**：GitHub 卡片 `page.route("https://api.github.com/**")` 返回固定响应，避免限流导致骨架屏抖动；
 3. **等待主题初始化**：等 `--mc-primary` 写入 `:root`；
 4. **等待动画收敛**：等 `.onload-animation` 全部 opacity 1（跳过 display:none 元素）；

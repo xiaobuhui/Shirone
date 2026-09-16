@@ -1,3 +1,5 @@
+import { prefersReducedMotion } from "./motion";
+
 const ROOT_SELECTOR = ".m3-option-group[data-option-group]";
 const TAB_SELECTOR = ".m3-option-group__tab";
 const PANEL_SELECTOR = ".m3-option-group__panel";
@@ -34,9 +36,7 @@ function scrollTabWithinList(tab: HTMLButtonElement): void {
 	if (Math.abs(delta) < 1) return;
 	list.scrollBy({
 		left: delta,
-		behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-			? "auto"
-			: "smooth",
+		behavior: prefersReducedMotion() ? "auto" : "smooth",
 	});
 }
 

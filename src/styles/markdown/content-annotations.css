@@ -149,10 +149,8 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.m3-content-note__popover:popover-open {
-		animation: none;
-	}
+html.motion-reduced .m3-content-note__popover:popover-open {
+	animation: none;
 }
 
 @media print {

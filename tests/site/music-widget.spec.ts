@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { allowMotion, reduceMotion } from "../fixtures/motion";
 import { musicConfig, resolveMusicOptions } from "../../src/config/musicConfig";
 import I18nKey from "../../src/i18n/i18nKey";
 import { en } from "../../src/i18n/languages/en";
@@ -240,7 +241,7 @@ test.describe("music sidebar client", () => {
 	});
 
 	test("normal motion animates the playing cover", async ({ page }) => {
-		await page.emulateMedia({ reducedMotion: "no-preference" });
+		await allowMotion(page);
 		await page.getByRole("button", { name: "Play", exact: true }).click();
 		await expect(page.locator(".music-player__cover--playing")).toHaveCSS(
 			"animation-name",
@@ -268,7 +269,7 @@ test.describe("music sidebar client", () => {
 	});
 
 	test("reduced motion removes cover animation", async ({ page }) => {
-		await page.emulateMedia({ reducedMotion: "reduce" });
+		await reduceMotion(page);
 		await page.getByRole("button", { name: "Play", exact: true }).click();
 		await expect(page.locator(".music-player__cover--playing")).toHaveCSS(
 			"animation-name",

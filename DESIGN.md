@@ -174,7 +174,7 @@ Use the existing M3E components before creating a new one. Interaction feedback 
 
 - **Do** keep the reading path obvious: page identity, content, metadata, navigation.
 - **Do** preserve SSR output for static content and hydrate only behavior that needs a browser.
-- **Do** respect `prefers-reduced-motion` and the project motion tokens.
+- **Do** respect the site's "reduce motion" switch (`html.motion-reduced`) and the project motion tokens. The OS `prefers-reduced-motion` preference is intentionally ignored (project decision, 2026-09-16).
 - **Do** keep optional integrations truly optional with zero burden when disabled.
 - **Do** use i18n keys for all user-visible component copy across all locale modules.
 - **Do** let dynamic HCT colors follow the configured hue and light/dark mode.

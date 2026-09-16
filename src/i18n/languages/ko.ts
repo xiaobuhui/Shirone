@@ -314,4 +314,11 @@ export const ko: Translation = {
 		"위 주소를 선호하는 RSS/Atom 리더기(NetNewsWire, Feedly, Inoreader, Follow 등)에 등록하여 새 글 알림을 받아보세요.",
 	[Key.feedOpenXml]: "원본 XML 보기",
 	[Key.feedRecentPosts]: "피드 최신 글",
+	// Opening animation greeting
+	[Key.openingGreetingLateNight]: "늦은 밤이네요, 제 블로그에 오신 것을 환영합니다",
+	[Key.openingGreetingMorning]: "좋은 아침입니다, 제 블로그에 오신 것을 환영합니다",
+	[Key.openingGreetingNoon]: "좋은 오후입니다, 제 블로그에 오신 것을 환영합니다",
+	[Key.openingGreetingAfternoon]: "좋은 오후입니다, 제 블로그에 오신 것을 환영합니다",
+	[Key.openingGreetingEvening]: "좋은 저녁입니다, 제 블로그에 오신 것을 환영합니다",
+	[Key.replayOpeningAnimation]: "오프닝 애니메이션 다시 재생",
 };
