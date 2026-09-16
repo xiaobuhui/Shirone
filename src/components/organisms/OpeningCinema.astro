@@ -1,0 +1,403 @@
+---
+/**
+ * 开场动画（Opening Cinema）——首页首次进入时的全屏开场。
+ *
+ * 时序：灰度底图 → 自左上角径向扩散出彩色 → 站点名逐字落下 → 按时段问候语打字机 → 整层上移收场。
+ *
+ * 契约：
+ * - 仅当 `openingAnimationConfig.enable` 为真且当前页是首页时渲染；关闭时零 DOM、零图片请求、零脚本。
+ * - 全程离线，不发起任何外部网络请求（问候语按访客本地时间分档，纯本地计算）。
+ * - 位于 `#swup-container` 之外，Swup 换页不会重放；同一会话只播一次（`sessionStorage`，标记在**播完之后**才写）。
+ * - 想再看一次：显示设置面板里的「重播开场动画」，它清掉标记后整页回首页重放。
+ * - 系统偏好 reduced-motion 或站点手动降级时直接跳过。
+ * - 无 JavaScript 时由 `<noscript>` 隐藏，页面照常可用。
+ */
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { resolveImageAsset } from "@utils/asset-utils";
+import { openingAnimationConfig, siteConfig } from "@/config";
+
+interface Props {
+	/** 当前页标识；只有 `home` 播放。 */
+	page?: string;
+}
+
+const { page } = Astro.props;
+const { enable, desktopImage, mobileImage, duration } = openingAnimationConfig;
+
+/** 仅首页启用时才解析图片，关闭时完全不触碰资源管线。 */
+const active = enable && page === "home";
+
+const resolveSrc = async (src: string): Promise<string> => {
+	if (!active) return "";
+	const resolved = await resolveImageAsset(src);
+	return typeof resolved === "string" ? resolved : resolved.src;
+};
+
+const [desktopSrc, mobileSrc] = active
+	? await Promise.all([resolveSrc(desktopImage), resolveSrc(mobileImage)])
+	: ["", ""];
+
+/**
+ * 时段问候语分档：访客本地小时数（不含上界）→ 文案。
+ * 语言在构建期由 `siteConfig.lang` 决定，时段在运行期由访客时钟决定（零网络请求）。
+ * 首尾两档同为「夜深了」，`find` 因此必然命中，无需兜底分支。
+ */
+const greetingTable = [
+	{ maxHour: 5, text: i18n(I18nKey.openingGreetingLateNight) },
+	{ maxHour: 11, text: i18n(I18nKey.openingGreetingMorning) },
+	{ maxHour: 13, text: i18n(I18nKey.openingGreetingNoon) },
+	{ maxHour: 18, text: i18n(I18nKey.openingGreetingAfternoon) },
+	{ maxHour: 23, text: i18n(I18nKey.openingGreetingEvening) },
+	{ maxHour: 24, text: i18n(I18nKey.openingGreetingLateNight) },
+];
+
+/** 落下的标题取自首页 Banner 主标题，站点名不在两处重复配置。 */
+const titleChars = [...siteConfig.banner.homeText.title].map((char) =>
+	char === " " ? "\u00a0" : char,
+);
+
+/** 图片地址经 CSS 自定义属性下发，由媒体查询在桌面/移动之间切换。 */
+const cinemaStyle = `--oc-desktop:url("${desktopSrc}");--oc-mobile:url("${mobileSrc}")`;
+---
+
+{
+	active && (
+		<>
+			<div
+				id="opening-cinema"
+				class="opening-cinema"
+				aria-hidden="true"
+				data-duration={duration}
+				style={cinemaStyle}
+			>
+				<div class="opening-cinema__frame">
+					<div class="opening-cinema__blur"></div>
+					<div class="opening-cinema__image"></div>
+					<div class="opening-cinema__image opening-cinema__image--reveal"></div>
+					<div class="opening-cinema__title">
+						{titleChars.map((char) => (
+							<span class="opening-cinema__char">{char}</span>
+						))}
+					</div>
+					<p class="opening-cinema__greeting">
+						<span
+							class="opening-cinema__type"
+							data-greetings={JSON.stringify(greetingTable)}
+						/>
+					</p>
+				</div>
+			</div>
+			<noscript>
+				<style is:inline set:html={"#opening-cinema{display:none}"} />
+			</noscript>
+		</>
+	)
+}
+
+<script>
+	import { prefersReducedMotion } from "@utils/motion";
+	import { hasSeenOpening, markOpeningSeen } from "@utils/opening-animation";
+
+	/** 设计基准时长；`duration` 配置项作为整体倍率，各阶段按比例缩放。 */
+	const BASE_DURATION = 4120;
+
+	/** 各阶段在设计基准时长下的毫秒位置。 */
+	const PHASE = {
+		reveal: 1050,
+		charStart: 1050,
+		charStep: 60,
+		charDur: 550,
+		typeStart: 2000,
+		typeDur: 950,
+		liftStart: 3220,
+		liftDur: 900,
+	};
+
+	/** 径向扩散圆心（左上，与图面高光同侧）与最大半径占比。 */
+	const REVEAL_ORIGIN = "15% 17%";
+	const REVEAL_MAX = 160;
+
+	/** 收场上移比例（%），略大于 100 以确保整层完全移出视口。 */
+	const LIFT_DISTANCE = -103;
+
+	/** 打字机光标闪烁周期（ms）。 */
+	const CARET_BLINK = 700;
+
+	interface Greeting {
+		maxHour: number;
+		text: string;
+	}
+
+	/** 取必需的子元素；结构缺失时抛错，由启动处的兜底逻辑撤下遮罩。 */
+	function must<T extends Element>(scope: ParentNode, selector: string): T {
+		const el = scope.querySelector<T>(selector);
+		if (!el) throw new Error(`opening-cinema: 缺少 ${selector}`);
+		return el;
+	}
+
+	const clamp01 = (value: number): number => (value < 0 ? 0 : value > 1 ? 1 : value);
+	const easeOutCubic = (p: number): number => 1 - (1 - p) ** 3;
+	const easeInOutCubic = (p: number): number =>
+		p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
+	const easeOutBack = (p: number): number => {
+		const c1 = 1.70158;
+		return 1 + (c1 + 1) * (p - 1) ** 3 + c1 * (p - 1) ** 2;
+	};
+	const lerp = (from: number, to: number, t: number): number => from + (to - from) * t;
+
+	/**
+	 * 播放代次令牌。每次 `boot()` 自增，异步续作（rAF 步进、字体到位回调）都校验自己那一代，
+	 * 于是重入时旧驱动会自行退出，不会和新播放抢同一份样式。
+	 * 目前整页加载只会 `boot()` 一次，这道令牌是为将来的「站内重播」预留的。
+	 */
+	let playbackToken = 0;
+
+	/** 动画期间锁住文档滚动，返回恢复函数。 */
+	function lockScroll(): () => void {
+		const previous = document.documentElement.style.overflow;
+		document.documentElement.style.overflow = "hidden";
+		return () => {
+			document.documentElement.style.overflow = previous;
+		};
+	}
+
+	function boot(root: HTMLElement): void {
+		// 本会话已播过，或系统/站点要求降级动效：直接撤下遮罩，不做任何动画。
+		if (hasSeenOpening() || prefersReducedMotion()) {
+			root.remove();
+			return;
+		}
+
+		const token = ++playbackToken;
+		const frame = must<HTMLElement>(root, ".opening-cinema__frame");
+		const blurLayer = must<HTMLElement>(root, ".opening-cinema__blur");
+		const revealLayer = must<HTMLElement>(root, ".opening-cinema__image--reveal");
+		const typeEl = must<HTMLElement>(root, ".opening-cinema__type");
+		const chars = [...root.querySelectorAll<HTMLElement>(".opening-cinema__char")];
+
+		// 动画期间锁滚动，避免遮罩下方的内容跟着滚轮/手指移动。
+		const unlockScroll = lockScroll();
+
+		const scale = (Number(root.dataset.duration) || BASE_DURATION) / BASE_DURATION;
+		const duration = BASE_DURATION * scale;
+		const at = (ms: number): number => ms * scale;
+
+		// 时段问候语：构建期定语言，运行期按访客本地时钟选分档。
+		let table: Greeting[] = [];
+		try {
+			table = JSON.parse(typeEl.dataset.greetings ?? "[]") as Greeting[];
+		} catch {
+			table = [];
+		}
+		const hour = new Date().getHours();
+		const greeting = table.find((entry) => hour < entry.maxHour)?.text ?? "";
+
+		let typeWidth = 0;
+		/**
+		 * 量出打字机需要的完整宽度。
+		 * 中文不能用 `ch` 作宽度单位（`ch` 是 "0" 的字宽，只有汉字的一半），必须实测 `scrollWidth`。
+		 */
+		const measure = (): void => {
+			if (!greeting) return;
+			typeEl.textContent = greeting;
+			typeEl.style.width = "auto";
+			typeWidth = typeEl.scrollWidth;
+			typeEl.style.width = "0px";
+		};
+
+		function render(ms: number): void {
+			const reveal = easeOutCubic(clamp01(ms / at(PHASE.reveal)));
+			const lift = easeInOutCubic(clamp01((ms - at(PHASE.liftStart)) / at(PHASE.liftDur)));
+			const typed = clamp01((ms - at(PHASE.typeStart)) / at(PHASE.typeDur));
+
+			frame.style.transform = `translateY(${lift * LIFT_DISTANCE}%)`;
+			revealLayer.style.clipPath = `circle(${reveal * REVEAL_MAX}% at ${REVEAL_ORIGIN})`;
+			// 模糊填底必须同步去灰，否则彩色扩散后上下留白条仍然发灰。
+			blurLayer.style.filter = `blur(28px) grayscale(${(1 - reveal).toFixed(3)}) brightness(${(
+				0.82 +
+				0.06 * reveal
+			).toFixed(3)})`;
+
+			typeEl.style.width = `${typed * typeWidth}px`;
+			typeEl.style.borderColor =
+				ms > at(PHASE.typeStart) + at(PHASE.typeDur) && Math.floor(ms / CARET_BLINK) % 2
+					? "transparent"
+					: "";
+
+			chars.forEach((char, index) => {
+				const progress = clamp01(
+					(ms - at(PHASE.charStart + index * PHASE.charStep)) / at(PHASE.charDur),
+				);
+				const eased = progress >= 1 ? 1 : easeOutBack(progress);
+				char.style.opacity = String(clamp01(progress * 4));
+				char.style.transform = `translateY(${lerp(-30, 0, eased)}px) rotate(${lerp(
+					-9,
+					0,
+					eased,
+				)}deg) scale(${lerp(0.86, 1, eased)})`;
+			});
+		}
+
+		let finished = false;
+		let raf = 0;
+		/** 已渲染到的时间点：rAF 时间戳在个别帧会抖动，用它钳住单调递增，避免画面回退。 */
+		let rendered = 0;
+		const startedAt = performance.now();
+
+		const finish = (): void => {
+			if (token !== playbackToken) return;
+			finished = true;
+			cancelAnimationFrame(raf);
+			unlockScroll();
+			root.remove();
+		};
+
+		const step = (now: number): void => {
+			if (token !== playbackToken) return;
+			rendered = Math.max(rendered, Math.min(now - startedAt, duration));
+			try {
+				render(rendered);
+			} catch {
+				finish();
+				return;
+			}
+			if (rendered < duration) {
+				raf = requestAnimationFrame(step);
+			} else {
+				// 完整播完才记「已播过」。若在启动时（boot）就落标记，动画中途被整页重载打断时，
+				// 标记已写入，该标签页整轮会话都会被判为「已播过」而再也不播——dev 冷启动时
+				// Vite 重新预构建依赖会强制刷新 2~3 次，正好踩中这一点。
+				markOpeningSeen();
+				finish();
+			}
+		};
+
+		measure();
+		// Web 字体到位后重测宽度，避免打字机把中文截断。
+		document.fonts?.ready
+			.then(() => {
+				if (finished || !root.isConnected || token !== playbackToken) return;
+				// 只重测宽度；帧一律由 rAF 的单一时间源推进，不在这里重放。
+				measure();
+			})
+			.catch(() => {
+				// 字体探测失败不影响动画本身。
+			});
+
+		try {
+			rendered = 0;
+			render(rendered);
+			raf = requestAnimationFrame(step);
+		} catch {
+			finish();
+		}
+	}
+
+	const cinema = document.getElementById("opening-cinema");
+	if (cinema) {
+		try {
+			boot(cinema);
+		} catch {
+			// 结构异常或初始化失败：撤下遮罩并解锁滚动，页面照常可用。
+			if (document.documentElement.style.overflow === "hidden") {
+				document.documentElement.style.overflow = "";
+			}
+			cinema.remove();
+		}
+	}
+</script>
+
+<style lang="stylus">
+	.opening-cinema
+		position: fixed
+		inset: 0
+		z-index: 90
+		overflow: hidden
+		background-color: #efebe3
+		--oc-img: var(--oc-desktop)
+		--oc-title-top: 50%
+		--oc-title-size: clamp(24px, 4.6vw, 40px)
+		--oc-greeting-offset: 46px
+		--oc-greeting-size: 14px
+
+	.opening-cinema__frame
+		position: absolute
+		inset: 0
+		will-change: transform
+
+	.opening-cinema__blur
+		position: absolute
+		inset: -10%
+		background-image: var(--oc-img)
+		background-position: center
+		background-repeat: no-repeat
+		background-size: cover
+		filter: blur(28px) grayscale(1) brightness(0.82)
+
+	.opening-cinema__image
+		position: absolute
+		inset: 0
+		background-image: var(--oc-img)
+		background-position: center
+		background-repeat: no-repeat
+		background-size: contain
+		filter: grayscale(1) brightness(0.92)
+
+	.opening-cinema__image--reveal
+		filter: none
+		clip-path: circle(0% at 15% 17%)
+
+	.opening-cinema__title
+		position: absolute
+		left: 0
+		right: 0
+		top: var(--oc-title-top)
+		transform: translateY(-50%)
+		text-align: center
+		font-size: var(--oc-title-size)
+		font-weight: 600
+		letter-spacing: 0.02em
+		line-height: 1.2
+		color: #fff
+		text-shadow: 0.055em 0.055em 0 #15131a, -0.055em 0.055em 0 #15131a, 0.055em -0.055em 0 #15131a, -0.055em -0.055em 0 #15131a, 0 0.08em 0.18em rgba(0, 0, 0, 0.6)
+
+	.opening-cinema__char
+		display: inline-block
+		opacity: 0
+
+	.opening-cinema__greeting
+		position: absolute
+		left: 0
+		right: 0
+		top: calc(var(--oc-title-top) + var(--oc-greeting-offset))
+		margin: 0
+		text-align: center
+		font-size: var(--oc-greeting-size)
+		line-height: 1.5
+		color: #fff
+		text-shadow: 1px 0 0 #15131a, -1px 0 0 #15131a, 0 1px 0 #15131a, 0 -1px 0 #15131a, 1px 1px 0 #15131a, -1px 1px 0 #15131a, 1px -1px 0 #15131a, -1px -1px 0 #15131a, 0 2px 6px rgba(0, 0, 0, 0.5)
+
+	.opening-cinema__type
+		display: inline-block
+		width: 0
+		overflow: hidden
+		white-space: nowrap
+		vertical-align: bottom
+		font-style: normal
+		border-right: 2px solid #fff
+
+	/* 移动端：竖图 + 标题上移到深色带（居中会正落在整张图最亮的黄/粉白交界上）。 */
+	@media (max-width: 767.98px)
+		.opening-cinema
+			--oc-img: var(--oc-mobile)
+			--oc-title-top: 21%
+			--oc-title-size: 19px
+			--oc-greeting-offset: 27px
+			--oc-greeting-size: 12.5px
+
+	/* 降级时必须在 CSS 层面就不显示，否则 SSR 出来的遮罩会先亮一帧、再被脚本撤掉。
+	   唯一入口：站点显示设置里的「减少动态效果」（html.motion-reduced）。 */
+	:global(html.motion-reduced) .opening-cinema
+		display: none
+</style>

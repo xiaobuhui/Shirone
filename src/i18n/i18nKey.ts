@@ -306,6 +306,14 @@ enum I18nKey {
 	feedHowToUseDesc = "feedHowToUseDesc",
 	feedOpenXml = "feedOpenXml",
 	feedRecentPosts = "feedRecentPosts",
+	// Opening animation greeting (picked by the visitor's local time)
+	openingGreetingLateNight = "openingGreetingLateNight",
+	openingGreetingMorning = "openingGreetingMorning",
+	openingGreetingNoon = "openingGreetingNoon",
+	openingGreetingAfternoon = "openingGreetingAfternoon",
+	openingGreetingEvening = "openingGreetingEvening",
+	// Opening animation · replay entry in the display settings panel
+	replayOpeningAnimation = "replayOpeningAnimation",
 }
 
 export default I18nKey;

@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import Snackbar from "@components/atoms/overlay/Snackbar.svelte";
+import OpeningCinema from "@components/organisms/OpeningCinema.astro";
 import ConfigCarrier from "@components/system/ConfigCarrier.astro";
 import UmamiRuntime from "@components/system/UmamiRuntime.astro";
 import { resolveAsset } from "@utils/asset-utils";
@@ -227,6 +228,7 @@ const hasMonoFont =
 			></div>
 		)}
 		<Snackbar client:only="svelte"></Snackbar>
+		<OpeningCinema page={initialPage} />
 		<slot />
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>
 	</body>

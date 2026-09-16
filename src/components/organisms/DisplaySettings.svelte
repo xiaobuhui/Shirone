@@ -21,6 +21,7 @@ import {
 	type McStyle,
 	resolveScheme,
 } from "@utils/mc-utils";
+import { replayOpeningAnimation } from "@utils/opening-animation";
 import {
 	getDefaultHue,
 	getDefaultTextureOpacity,
@@ -41,6 +42,7 @@ import { onMount } from "svelte";
 import {
 	getDefaultSpec,
 	getDefaultStyle,
+	openingAnimationConfig,
 	resolveDisplaySettings,
 	siteConfig,
 } from "@/config";
@@ -51,6 +53,9 @@ import type { TexturePreset } from "@/types/textureConfig";
 let { class: className = "" }: { class?: string } = $props();
 
 const displayConfig = resolveDisplaySettings();
+
+/** 开场动画开着才有「重播」可谈；关掉时整行不渲染。 */
+const openingAnimationEnabled = openingAnimationConfig.enable;
 
 const defaultHue = getDefaultHue();
 const defaultStyle = getDefaultStyle() as McStyle;
@@ -372,6 +377,21 @@ const stylePreviews = $derived(
                 </div>
                 <Switch bind:checked={motionReduced} label={i18n(I18nKey.reduceMotion)} icons />
             </div>
+        {/if}
+
+        <!-- 开场动画重播：遮罩只在首页 SSR 渲染，所以这里清掉会话标记后整页回首页重放 -->
+        {#if openingAnimationEnabled}
+            <button
+                type="button"
+                class="p-4 w-full flex items-center justify-between text-left active:scale-[0.99] will-change-transform"
+                onclick={replayOpeningAnimation}
+            >
+                <div class="flex items-center gap-2">
+                    <Icon icon="material-symbols:movie-outline-rounded" class="text-lg text-[var(--primary)]" />
+                    <span class="text-sm font-bold text-[var(--on-surface)]">{i18n(I18nKey.replayOpeningAnimation)}</span>
+                </div>
+                <Icon icon="material-symbols:replay-rounded" class="text-lg text-[var(--on-surface-variant)]" />
+            </button>
         {/if}
     </PanelStack>
 </div>
