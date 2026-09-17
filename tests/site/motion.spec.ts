@@ -393,16 +393,37 @@ test.describe("sidebar pages filter (swup sync)", () => {
 		await page.goto("/", { waitUntil: "networkidle" });
 		expect(await statsWrapperHidden(page)).toBe(false);
 
+		// 点击前先挂一个同步探针，数「侧栏 widget 创建了几次动画」。
+		//
+		// 原先是点击之后才 waitForFunction 轮询「此刻是否有 running 的动画」，而这段退场只有
+		// 150ms（fadeOutThenHide 的 --m3e-duration-short）—— 只要一次 CDP 往返慢过这个窗口就永远
+		// 等不到，一路空转到 30s 超时。`trace: "retain-on-failure"` 给每个用例录 trace 的开销恰好
+		// 能拖到那个程度（实测：开 trace 2/3 失败，`--trace=off` 5/5 通过）。
+		// 改成**单调计数**：探针只增不减，事后读结果即可，不依赖轮询恰好撞上某一帧。
+		// 侧栏 widget 的动效全部走 WAAPI（src/utils/motion.ts 的 fadeOutThenHide / revealIn），
+		// 所以拦 Element.prototype.animate 是精确的，也不会把 CSS 动画误算进来。
+		await page.evaluate(() => {
+			const state = { created: 0 };
+			(window as unknown as { __sidebarAnim?: typeof state }).__sidebarAnim = state;
+			const proto = Element.prototype as unknown as {
+				animate: (...args: unknown[]) => Animation;
+			};
+			const original = proto.animate;
+			proto.animate = function (this: Element, ...args: unknown[]) {
+				if (this.closest?.("[data-sidebar-pages]")) state.created += 1;
+				return original.apply(this, args);
+			};
+		});
+
 		await clickLink(page, '#swup-container a[href^="/posts/"]');
 		await waitCurrentPage(page, "post");
-		await page.waitForFunction(() => {
-			const wrapper = document
-				.querySelector('widget-layout[data-id="site-stats"]')
-				?.closest<HTMLElement>("[data-sidebar-pages]");
-			return wrapper
-				?.getAnimations()
-				.some((animation) => animation.playState === "running");
-		});
+		await page.waitForFunction(
+			() =>
+				((window as unknown as { __sidebarAnim?: { created: number } })
+					.__sidebarAnim?.created ?? 0) > 0,
+			null,
+			{ timeout: 5000 },
+		);
 
 		await clickLink(page, '#top-row a[href="/archive/"]');
 		await waitCurrentPage(page, "archive");
