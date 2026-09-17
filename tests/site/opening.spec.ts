@@ -12,6 +12,8 @@ const CINEMA_ID = "opening-cinema";
 const CINEMA = `#${CINEMA_ID}`;
 /** 会话内只播一次的标记键，与 src/utils/opening-animation.ts 的 OPENING_SEEN_KEY 一致。 */
 const SEEN_KEY = "shirone-opening-played.v1";
+/** 一次性「强制播放」标记键，与 OPENING_FORCE_KEY 一致；播完必须已被清掉。 */
+const FORCE_KEY = "shirone-opening-force.v1";
 /** 整段动画时长（配置默认 4120ms）之外的等待余量。 */
 const PLAY_THROUGH = 12_000;
 
@@ -154,24 +156,95 @@ test.describe("开场动画 · 重播入口", () => {
 });
 
 test.describe("开场动画 · 响应式与降级", () => {
-	test("移动端取用竖版图，并把标题上移到深色带", async ({ page }) => {
+	test("移动端取用竖版图，标题块居中且字号与横幅同量级", async ({ page }) => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto("/", { waitUntil: "commit" });
 		await expect(page.locator(CINEMA)).toBeAttached();
 
-		const style = await page.evaluate((id) => {
+		// 等样式表真正生效再量：默认 16px 说明还没应用（`commit` 只保证导航已提交）。
+		await page.waitForFunction(
+			() => {
+				const title = document.querySelector<HTMLElement>(
+					".opening-cinema__title",
+				);
+				return !!title && Number.parseFloat(getComputedStyle(title).fontSize) > 20;
+			},
+			null,
+			{ timeout: 10_000, polling: 30 },
+		);
+
+		const measured = await page.evaluate((id) => {
 			const root = document.getElementById(id);
-			if (!root) return null;
-			const computed = getComputedStyle(root);
+			const title = root?.querySelector<HTMLElement>(".opening-cinema__title");
+			const greeting = root?.querySelector<HTMLElement>(
+				".opening-cinema__greeting",
+			);
+			if (!root || !title || !greeting) return null;
+			const titleBox = title.getBoundingClientRect();
+			const greetingBox = greeting.getBoundingClientRect();
 			return {
-				image: computed.getPropertyValue("--oc-img"),
-				titleTop: computed.getPropertyValue("--oc-title-top").trim(),
+				image: getComputedStyle(root).getPropertyValue("--oc-img"),
+				titleTopVar: getComputedStyle(root)
+					.getPropertyValue("--oc-title-top")
+					.trim(),
+				titleSize: Number.parseFloat(getComputedStyle(title).fontSize),
+				greetingSize: Number.parseFloat(getComputedStyle(greeting).fontSize),
+				blockCenter: (titleBox.top + greetingBox.bottom) / 2,
+				viewportCenter: window.innerHeight / 2,
 			};
 		}, CINEMA_ID);
 
-		expect(style?.image).toContain("mobile");
-		// 居中会正落在竖图最亮的黄/粉白交界上，实测对比度只有 2:1。
-		expect(style?.titleTop).toBe("21%");
+		expect(measured?.image).toContain("mobile");
+		// 2026-09-17：原先为躲开竖图中间那条黄/粉白交界，标题被上移到 21%；
+		// 站主要求「别怕遮住图片内容，放中间」→ 改回居中（改用 flex 居中，不再是魔法变量）。
+		expect(measured?.titleTopVar).toBe("");
+		// 字号向首页横幅看齐（移动端横幅 h1 = 38.5px），原先是 19px / 12.5px。
+		expect(measured?.titleSize ?? 0).toBeGreaterThanOrEqual(36);
+		expect(measured?.greetingSize ?? 0).toBeGreaterThanOrEqual(13);
+		// 标题 + 问候语作为**一个整体**居中：中心与视口中线误差 < 12px
+		expect(
+			Math.abs((measured?.blockCenter ?? 0) - (measured?.viewportCenter ?? 0)),
+		).toBeLessThan(12);
+	});
+
+	test("标题与问候语压在图片层之上（不被遮罩内部的图片吃掉）", async ({ page }) => {
+		await page.goto("/", { waitUntil: "commit" });
+		await expect(page.locator(CINEMA)).toBeAttached();
+
+		// 等问候语真的开始打字：宽度为 0 时命中测试无从谈起。
+		await page.waitForFunction(
+			() => {
+				const el = document.querySelector<HTMLElement>(".opening-cinema__type");
+				return !!el && el.offsetWidth > 40;
+			},
+			null,
+			{ timeout: PLAY_THROUGH, polling: 50 },
+		);
+
+		const hits = await page.evaluate(() => {
+			const topAt = (selector: string) => {
+				const el = document.querySelector<HTMLElement>(selector);
+				if (!el) return "missing";
+				const box = el.getBoundingClientRect();
+				const top = document.elementFromPoint(
+					box.x + box.width / 2,
+					box.y + box.height / 2,
+				);
+				if (!top) return "nothing";
+				return el === top || el.contains(top)
+					? "on-top"
+					: `covered-by:${top.className}`;
+			};
+			return {
+				title: topAt(".opening-cinema__title"),
+				greeting: topAt(".opening-cinema__greeting"),
+			};
+		});
+
+		// 标题块是普通流内元素，而图片三层是绝对定位 —— 不显式 z-index 就会被盖住，
+		// 且症状极隐蔽：DOM 在、尺寸正常、颜色正常，屏幕上却什么都看不到（2026-09-17 踩过）。
+		expect(hits.title).toBe("on-top");
+		expect(hits.greeting).toBe("on-top");
 	});
 
 	test("打开「减少动态效果」时直接不出现", async ({ page }) => {
@@ -179,6 +252,38 @@ test.describe("开场动画 · 响应式与降级", () => {
 		await page.goto("/", { waitUntil: "domcontentloaded" });
 		// 元素不存在也算 hidden —— CSS 层隐藏与脚本移除都满足这条约定。
 		await expect(page.locator(CINEMA)).toBeHidden();
+	});
+
+	test("「减少动态效果」打开时，重播入口仍强行播一遍", async ({ page }) => {
+		await page.setViewportSize({ width: 1600, height: 1000 });
+		await reduceMotion(page);
+
+		// 降级态下首页本来不播，所以从非首页进设置面板点重播。
+		await page.goto("/about/", { waitUntil: "load" });
+		await page.locator("#display-settings-switch").click();
+		const replay = page.locator("#display-setting").getByText("重播开场动画");
+		await replay.waitFor({ state: "visible", timeout: 10_000 });
+
+		await Promise.all([
+			page.waitForURL((target) => new URL(target).pathname === "/", {
+				timeout: 15_000,
+			}),
+			replay.click(),
+		]);
+
+		// 关键断言：遮罩得**真的显示**出来。降级规则若没被越过，这里会停在 display:none。
+		await expect(page.locator(CINEMA)).toBeVisible();
+		// 而且是「完整播完」而不是被撤掉 —— 只有跑完全程才会落标记。
+		await expect
+			.poll(
+				() => page.evaluate((key) => sessionStorage.getItem(key), SEEN_KEY),
+				{ timeout: PLAY_THROUGH },
+			)
+			.toBe("1");
+		// 一次性：播完必须已清，否则此后每次加载都会绕过降级开关。
+		expect(
+			await page.evaluate((key) => sessionStorage.getItem(key), FORCE_KEY),
+		).toBeNull();
 	});
 });
 

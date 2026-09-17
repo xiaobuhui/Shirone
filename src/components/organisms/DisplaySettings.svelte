@@ -379,7 +379,8 @@ const stylePreviews = $derived(
             </div>
         {/if}
 
-        <!-- 开场动画重播：遮罩只在首页 SSR 渲染，所以这里清掉会话标记后整页回首页重放 -->
+        <!-- 开场动画重播：遮罩只在首页 SSR 渲染，所以这里清掉会话标记后整页回首页重放；
+             并置一次性「强制播放」标记 —— 显式重播要越过站点「减少动态效果」开关 -->
         {#if openingAnimationEnabled}
             <button
                 type="button"
@@ -398,6 +399,36 @@ const stylePreviews = $derived(
 
 
 <style lang="stylus">
+    /* 面板比一屏高时（1080 屏尤为明显）最后几行会被 .float-panel 的 overflow:hidden
+       直接切掉，而且完全没有滚动能力 —— 站主要求加滚动条。
+       上限 = 视口 − 顶栏 4rem − 底部留白 1rem；滚动条取主题 --scrollbar-bg 系色板，深色模式同样看得见。 */
+    #display-setting
+        max-height: calc(100dvh - 5rem)
+        overflow-x: hidden
+        overflow-y: auto
+        overscroll-behavior: contain
+
+        /* 别在这里设 scrollbar-width / scrollbar-color：Chrome 只要看到标准属性就改用「原生细条」，
+           下面这组 ::-webkit-scrollbar（8px、圆角、悬停/按下加深）会被整组忽略，实测只剩一条
+           极淡的灰线，等于没加。面板要的是「一眼看出能滚」，所以留在伪元素这条路上；
+           Firefox 不认 ::-webkit-scrollbar，退回它自己的默认滚动条，够用。 */
+
+        &::-webkit-scrollbar
+            width: var(--m3e-space-2)
+
+        &::-webkit-scrollbar-track
+            background: transparent
+
+        &::-webkit-scrollbar-thumb
+            background: var(--scrollbar-bg)
+            border-radius: var(--shape-corner-full)
+
+            &:hover
+                background: var(--scrollbar-bg-hover)
+
+            &:active
+                background: var(--scrollbar-bg-active)
+
     .m3-style-cell
         display: flex
         flex-direction: column

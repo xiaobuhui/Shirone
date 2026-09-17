@@ -9,7 +9,7 @@
  * - 全程离线，不发起任何外部网络请求（问候语按访客本地时间分档，纯本地计算）。
  * - 位于 `#swup-container` 之外，Swup 换页不会重放；同一会话只播一次（`sessionStorage`，标记在**播完之后**才写）。
  * - 想再看一次：显示设置面板里的「重播开场动画」，它清掉标记后整页回首页重放。
- * - 系统偏好 reduced-motion 或站点手动降级时直接跳过。
+ * - 站点「减少动态效果」打开时直接跳过（唯一降级入口，见改造计划 §6.8）；访客显式重播那一轮除外。
  * - 无 JavaScript 时由 `<noscript>` 隐藏，页面照常可用。
  */
 import I18nKey from "@i18n/i18nKey";
@@ -88,6 +88,19 @@ const cinemaStyle = `--oc-desktop:url("${desktopSrc}");--oc-mobile:url("${mobile
 					</p>
 				</div>
 			</div>
+			<script is:inline>
+				// 重播入口会在会话里留一个一次性标记（键名与 src/utils/opening-animation.ts
+				// 的 OPENING_FORCE_KEY 一致）。这里在**首帧之前**给遮罩加类，让下面那条降级规则
+				// （html.motion-reduced 下 display:none）不生效 —— 模块脚本晚于首帧执行，
+				// 只靠它加类会先闪一下首页。
+				try {
+					if (sessionStorage.getItem("shirone-opening-force.v1") === "1") {
+						document
+							.getElementById("opening-cinema")
+							?.classList.add("opening-cinema--forced");
+					}
+				} catch {}
+			</script>
 			<noscript>
 				<style is:inline set:html={"#opening-cinema{display:none}"} />
 			</noscript>
@@ -97,7 +110,11 @@ const cinemaStyle = `--oc-desktop:url("${desktopSrc}");--oc-mobile:url("${mobile
 
 <script>
 	import { prefersReducedMotion } from "@utils/motion";
-	import { hasSeenOpening, markOpeningSeen } from "@utils/opening-animation";
+	import {
+		consumeOpeningForcedPlay,
+		hasSeenOpening,
+		markOpeningSeen,
+	} from "@utils/opening-animation";
 
 	/** 设计基准时长；`duration` 配置项作为整体倍率，各阶段按比例缩放。 */
 	const BASE_DURATION = 4120;
@@ -163,8 +180,12 @@ const cinemaStyle = `--oc-desktop:url("${desktopSrc}");--oc-mobile:url("${mobile
 	}
 
 	function boot(root: HTMLElement): void {
-		// 本会话已播过，或系统/站点要求降级动效：直接撤下遮罩，不做任何动画。
-		if (hasSeenOpening() || prefersReducedMotion()) {
+		// 访客显式点过「重播」：这一轮越过降级开关。标记**先消费掉**再判断 ——
+		// 它是一次性的，留在会话里会让此后每次加载都绕过降级。
+		const forced = consumeOpeningForcedPlay();
+
+		// 本会话已播过，或站点要求降级动效：直接撤下遮罩，不做任何动画。
+		if (!forced && (hasSeenOpening() || prefersReducedMotion())) {
 			root.remove();
 			return;
 		}
@@ -316,14 +337,23 @@ const cinemaStyle = `--oc-desktop:url("${desktopSrc}");--oc-mobile:url("${mobile
 		overflow: hidden
 		background-color: #efebe3
 		--oc-img: var(--oc-desktop)
-		--oc-title-top: 50%
-		--oc-title-size: clamp(24px, 4.6vw, 40px)
-		--oc-greeting-offset: 46px
-		--oc-greeting-size: 14px
+		/* 标题字号向首页横幅大字看齐（横幅 h1 是 80px）：开场收场时两处大小相近，视觉才接得上。
+		   原先上限 40px 在 1440/1920 屏上明显偏小，站主要求放大、不怕压住图。 */
+		--oc-title-size: clamp(40px, 6vw, 88px)
+		--oc-greeting-size: clamp(15px, 1.35vw, 22px)
 
+	/* 标题与问候语作为**一个整体**垂直居中。原来靠两个绝对定位 + 魔法偏移量
+	   （top:50% 与 top:calc(50% + 46px)）—— 46px 是按 40px 标题手调的，字号一变就得同时改两处；
+	   改用 flex 后它们自然排成一个居中块，移动端也才真正居中。
+	   图片三层（blur / image / reveal）都是绝对定位，不受这个 flex 影响。 */
 	.opening-cinema__frame
 		position: absolute
 		inset: 0
+		display: flex
+		flex-direction: column
+		align-items: center
+		justify-content: center
+		padding: 0 var(--m3e-space-6)
 		will-change: transform
 
 	.opening-cinema__blur
@@ -348,29 +378,28 @@ const cinemaStyle = `--oc-desktop:url("${desktopSrc}");--oc-mobile:url("${mobile
 		filter: none
 		clip-path: circle(0% at 15% 17%)
 
+	/* 必须显式抬到图片层之上：图片三层是绝对定位（z-index:auto），而这里改成了普通流内元素，
+	   层叠顺序上会落到它们**下面**被盖住。标题原先「看着没事」只是因为它的字符带 inline transform、
+	   自己另开了层叠上下文 —— 问候语没有 transform，就直接被图片吃掉了（2026-09-17 实测踩到）。 */
 	.opening-cinema__title
-		position: absolute
-		left: 0
-		right: 0
-		top: var(--oc-title-top)
-		transform: translateY(-50%)
+		position: relative
+		z-index: 1
+		margin: 0 0 0.1em
 		text-align: center
 		font-size: var(--oc-title-size)
-		font-weight: 600
-		letter-spacing: 0.02em
-		line-height: 1.2
+		font-weight: 700
+		letter-spacing: 0.01em
+		line-height: 1.15
 		color: #fff
-		text-shadow: 0.055em 0.055em 0 #15131a, -0.055em 0.055em 0 #15131a, 0.055em -0.055em 0 #15131a, -0.055em -0.055em 0 #15131a, 0 0.08em 0.18em rgba(0, 0, 0, 0.6)
+		text-shadow: 0.05em 0.05em 0 #15131a, -0.05em 0.05em 0 #15131a, 0.05em -0.05em 0 #15131a, -0.05em -0.05em 0 #15131a, 0 0.08em 0.18em rgba(0, 0, 0, 0.6)
 
 	.opening-cinema__char
 		display: inline-block
 		opacity: 0
 
 	.opening-cinema__greeting
-		position: absolute
-		left: 0
-		right: 0
-		top: calc(var(--oc-title-top) + var(--oc-greeting-offset))
+		position: relative
+		z-index: 1
 		margin: 0
 		text-align: center
 		font-size: var(--oc-greeting-size)
@@ -387,17 +416,23 @@ const cinemaStyle = `--oc-desktop:url("${desktopSrc}");--oc-mobile:url("${mobile
 		font-style: normal
 		border-right: 2px solid #fff
 
-	/* 移动端：竖图 + 标题上移到深色带（居中会正落在整张图最亮的黄/粉白交界上）。 */
+	/* 移动端：竖图 + **居中**。2026-09-17 由「上移到 21% 的深色带」改回居中 ——
+	   站主要求「别怕遮住图片内容，放中间」；字号放大到与横幅同量级后，
+	   深色描边足以保证落在亮色区也能读清（原先上移是为了躲开中间那条黄/粉白交界）。 */
 	@media (max-width: 767.98px)
 		.opening-cinema
 			--oc-img: var(--oc-mobile)
-			--oc-title-top: 21%
-			--oc-title-size: 19px
-			--oc-greeting-offset: 27px
-			--oc-greeting-size: 12.5px
+			--oc-title-size: clamp(30px, 10vw, 46px)
+			--oc-greeting-size: clamp(13px, 3.6vw, 18px)
 
 	/* 降级时必须在 CSS 层面就不显示，否则 SSR 出来的遮罩会先亮一帧、再被脚本撤掉。
 	   唯一入口：站点显示设置里的「减少动态效果」（html.motion-reduced）。 */
 	:global(html.motion-reduced) .opening-cinema
 		display: none
+
+	/* 例外：访客显式点过「重播开场动画」的那一轮。那是明确要求播放，必须越过降级开关，
+	   否则按钮在降级态下就是个死按钮。类由遮罩后方的内联脚本在首帧前加上；
+	   本条比上一条多一个类，特异性更高，不需要 !important。 */
+	:global(html.motion-reduced) .opening-cinema.opening-cinema--forced
+		display: block
 </style>
