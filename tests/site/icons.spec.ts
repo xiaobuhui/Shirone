@@ -35,9 +35,13 @@ test.describe("SSR 图标渲染", () => {
 
 	test("侧栏个人资料社交链接图标可见（3 个）", async ({ page }) => {
 		await page.goto("/");
-		const links = page.locator("a[rel='me'] svg");
+		// 不能用 a[rel='me'] 计数：Profile.astro 只给 http(s) 外链加 rel="me"，
+		// 而 mailto: 那条（邮箱）永远没有 —— 按侧栏社交行的容器取全部入口。
+		const links = page.locator(".flex.flex-wrap.gap-2.justify-center.mb-1 a");
 		await expect(links).toHaveCount(3);
-		await expect(links.first()).toBeVisible();
+		for (const link of await links.all()) {
+			await expect(link.locator("svg")).toBeVisible();
+		}
 	});
 
 	test("文章页复制链接按钮图标可见", async ({ page }) => {

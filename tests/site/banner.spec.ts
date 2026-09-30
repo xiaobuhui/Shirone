@@ -284,7 +284,7 @@ test.describe("banner wallpaper", () => {
 		);
 		await expect(
 			context.locator("[data-banner-context-description]"),
-		).toHaveText("欢迎交换友链，申请方式见「关于」页。");
+		).toHaveText("欢迎交换友链，点右边按钮看看。");
 		await expect(context.locator("[data-banner-context-meta]")).toBeHidden();
 	});
 
@@ -674,7 +674,7 @@ test.describe("banner wallpaper", () => {
 			"友链",
 		);
 		await expect(page.locator("[data-banner-context-description]")).toHaveText(
-			"欢迎交换友链，申请方式见「关于」页。",
+			"欢迎交换友链，点右边按钮看看。",
 		);
 		await expect(page.locator("[data-banner-context-meta]")).toBeHidden();
 		expect(
