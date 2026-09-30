@@ -179,6 +179,8 @@ export default defineConfig({
 	site: siteConfig.site,
 	base: siteConfig.base ?? "/",
 	trailingSlash: "always",
+	// 关闭 Astro 自带的 dev 工具栏（2026-09-30 站主定；只影响本地 dev，生产构建本来就不含它）
+	devToolbar: { enabled: false },
 	fonts: configuredFonts,
 	integrations: [
 			...(umamiIntegration ? [umamiIntegration] : []),
