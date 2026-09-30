@@ -1,0 +1,46 @@
+---
+/**
+ * 「申请友链」页 —— `/friends/apply/`，由友链页标题右侧的按钮进入。
+ *
+ * 文案全部来自内容仓 `content/spec/friends-apply.md`：页面标题取正文里的第一个一级标题，
+ * 因此本文件不含任何硬编码的用户可见文案（i18n 约定见根 `AGENTS.md`）。
+ * 侧栏标识沿用 `friends`（不新增 SidebarPage 字面量）；内容缺失时抛错，与 about / wip 一致。
+ */
+import { getEntry, render } from "astro:content";
+import Card from "@components/atoms/display/Card.svelte";
+import Markdown from "@components/content/Markdown.astro";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getMarkdownStylesheetAssets } from "@utils/markdown-assets";
+
+const applyEntry = await getEntry("spec", "friends-apply");
+
+if (!applyEntry) {
+	throw new Error(
+		"Friends apply page content not found: expected content/spec/friends-apply.md in the content repository",
+	);
+}
+
+const { Content, headings, remarkPluginFrontmatter } = await render(applyEntry);
+const markdownStylesheetAssets = await getMarkdownStylesheetAssets(
+	remarkPluginFrontmatter.markdownSyntaxes,
+);
+
+/**
+ * 一级标题即页面标题；缺失时不传 title，由布局回退到站点标题（不硬编码文案）。
+ * 末尾的 `#` 是标题锚点链接混入的文本（与 SidebarTOC / wip.astro 的处理一致）。
+ */
+const pageTitle = headings
+	.find((heading) => heading.depth === 1)
+	?.text.replace(/#+$/, "")
+	.trim();
+---
+<MainGridLayout title={pageTitle} description={pageTitle} page="friends">
+    {markdownStylesheetAssets.map(({ pack, css }) => <style is:inline slot="head" data-swup-optional={pack} set:html={css}></style>)}
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+        <Card color="var(--card-bg)" radius="l" class="z-10 px-9 py-6 relative w-full">
+            <Markdown class="mt-2">
+                <Content />
+            </Markdown>
+        </Card>
+    </div>
+</MainGridLayout>

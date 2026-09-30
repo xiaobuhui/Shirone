@@ -15,9 +15,10 @@ export const ko: Translation = {
 	[Key.friends]: "친구",
 	[Key.friendsNoResults]: "조건에 맞는 친구가 없습니다",
 	[Key.friendsBanner]:
-		"링크 교환을 환영합니다. 신청 방법은 소개 페이지를 참고하세요.",
+		"링크 교환은 언제나 환영합니다. 오른쪽 버튼을 이용해 주세요.",
 	[Key.friendsCount]: "개의 친구 링크",
 	[Key.friendsCounts]: "개의 친구 링크",
+	[Key.friendsApply]: "신청",
 
 	[Key.moments]: "모먼트",
 	[Key.momentsNoResults]: "조건에 맞는 모먼트가 없습니다",

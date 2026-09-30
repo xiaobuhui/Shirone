@@ -18,6 +18,8 @@ enum I18nKey {
 	friendsBanner = "friendsBanner",
 	friendsCount = "friendsCount",
 	friendsCounts = "friendsCounts",
+	/** 友链页右上角按钮：进入「申请友链」页 */
+	friendsApply = "friendsApply",
 
 	moments = "moments",
 	momentsNoResults = "momentsNoResults",

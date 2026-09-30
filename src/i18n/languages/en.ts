@@ -15,9 +15,10 @@ export const en: Translation = {
 	[Key.friends]: "Friends",
 	[Key.friendsNoResults]: "No friends matched your filters",
 	[Key.friendsBanner]:
-		"Link exchange is welcome — see the About page for how to apply.",
+		"Link exchange is welcome — use the button on the right.",
 	[Key.friendsCount]: "friend",
 	[Key.friendsCounts]: "friends",
+	[Key.friendsApply]: "Apply",
 
 	[Key.moments]: "Moments",
 	[Key.momentsNoResults]: "No moments matched your filters",

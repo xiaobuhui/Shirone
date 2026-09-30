@@ -1,4 +1,5 @@
 <script lang="ts">
+import Button from "@components/atoms/action/Button.svelte";
 import Chips from "@components/atoms/action/Chips.svelte";
 import Card from "@components/atoms/display/Card.svelte";
 import LoadingIndicator from "@components/atoms/feedback/LoadingIndicator.svelte";
@@ -8,6 +9,7 @@ import PageHeader from "@components/molecules/PageHeader.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
+import { url } from "@utils/url-utils";
 import { onMount } from "svelte";
 import type { FriendItem } from "../../data/friends";
 
@@ -92,11 +94,21 @@ onMount(() => {
 </script>
 
 <Card color="var(--card-bg)" radius="l" class="friend-section px-8 py-6">
-	<PageHeader
-		icon="material-symbols:handshake-outline-rounded"
-		title={i18n(I18nKey.friends)}
-		subtitle={i18n(I18nKey.friendsBanner)}
-	/>
+	<div class="friend-section__head">
+		<PageHeader
+			icon="material-symbols:handshake-outline-rounded"
+			title={i18n(I18nKey.friends)}
+			subtitle={i18n(I18nKey.friendsBanner)}
+		/>
+		<Button
+			href={url("/friends/apply/")}
+			variant="tonal"
+			size="small"
+			icon="material-symbols:add-link-rounded"
+			label={i18n(I18nKey.friendsApply)}
+			radius="full"
+		/>
+	</div>
 
 	{#if friends.length > 0}
 		<div class="friend-section__tools">
@@ -167,6 +179,23 @@ onMount(() => {
 
 .friend-section
 	display: block
+
+	&__head
+		display: flex
+		align-items: flex-start
+		justify-content: space-between
+		gap: 1rem
+		margin-bottom: 1.5rem
+
+		/* PageHeader 自带 1.5rem 下边距，统一改由容器承担；按钮与标题行（2rem 图标主导）视觉对齐 */
+		:global(.page-header)
+			flex: 1
+			min-width: 0
+			margin-bottom: 0
+
+		:global(.m3-button)
+			flex-shrink: 0
+			margin-top: -0.25rem
 
 	&__tools
 		display: flex
