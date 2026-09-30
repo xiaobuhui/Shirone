@@ -110,6 +110,28 @@ const initialDesktopImage = desktopResponsiveImages[0];
 const initialMobileImage = mobileResponsiveImages[0];
 const initialImage = initialDesktopImage ?? initialMobileImage;
 const initialMobileBanner = page === "home";
+
+// 底部角色装饰带：只在首页 Banner 出现，关闭或缺图时不输出任何 DOM。
+const characterSources = siteConfig.banner.characters.enable
+	? siteConfig.banner.characters.items.filter((src) => src.trim())
+	: [];
+interface ResolvedCharacter {
+	src: string;
+	width?: number;
+	height?: number;
+}
+const characterItems: ResolvedCharacter[] = await Promise.all(
+	characterSources.map(async (source) => {
+		const resolved = await resolveImageAsset(source);
+		if (typeof resolved === "string") {
+			return {
+				src: resolved.startsWith("/") ? url(resolved) : resolved,
+			};
+		}
+		return { src: resolved.src, width: resolved.width, height: resolved.height };
+	}),
+);
+const showCharacters = page === "home" && characterItems.length > 0;
 ---
 
 <section
@@ -202,6 +224,21 @@ const initialMobileBanner = page === "home";
 		</div>
 	</div>
 	{siteConfig.banner.waves.enable && <BannerWaves />}
+	{showCharacters && (
+		<div class="banner-stage__characters" aria-hidden="true">
+			{characterItems.map((item) => (
+				<img
+					class="banner-stage__character"
+					src={item.src}
+					width={item.width}
+					height={item.height}
+					alt=""
+					loading="lazy"
+					decoding="async"
+				/>
+			))}
+		</div>
+	)}
 </section>
 
 <script>
@@ -1049,6 +1086,33 @@ const initialMobileBanner = page === "home";
 		.banner-stage[data-copy-mode="context"] .banner-stage__copy--context
 			display: flex
 
+		// 底部角色装饰带：贴在 Banner 底边、压在水波（z-index 3）之上。
+		.banner-stage__characters
+			position: absolute
+			inset: auto 0 0 0
+			z-index: 4
+			display: flex
+			flex-wrap: nowrap
+			align-items: flex-end
+			justify-content: center
+			// 2px 间隙比 --m3e-space-1(4px) 更紧，让整排看起来是连续的一条
+			gap: calc(var(--m3e-space-1) / 2)
+			padding: 0 var(--m3e-space-2)
+			// 单只高度上限（内容几何，非 M3E 规格常量）：桌面 120px。
+			// 用 px 而不是 rem：主题在窄屏会把根字号降到 14px，rem 会让这里的实际尺寸跟着缩水。
+			--strip-h: 120px
+			pointer-events: none
+
+			.banner-stage__character
+				display: block
+				// flex-shrink 兜底：整排宽于可用宽时等比缩小，永不溢出、永不裁切
+				flex: 0 1 auto
+				min-width: 0
+				width: auto
+				height: var(--strip-h)
+				object-fit: contain
+				object-position: 50% 100%
+
 
 	:global(html[data-wallpaper-mode="none"]) .banner-stage
 		display: none
@@ -1063,6 +1127,10 @@ const initialMobileBanner = page === "home";
 
 			&__copy p
 				font-size: 1.125rem
+
+			&__characters
+				// 手机：仍是一排 8 个，高度降到 46px 上限；窄到 320 时靠 flex-shrink 再等比缩到约 43px
+				--strip-h: 46px
 
 	@keyframes banner-subtitle-caret
 		0%,

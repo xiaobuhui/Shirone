@@ -105,6 +105,13 @@ export const siteConfig: SiteConfig = withUserConfig("site", {
 			// 在 Banner 底部渲染页面背景色水波纹；关闭后不输出波浪 DOM。
 			enable: true,
 		},
+		characters: {
+			// 首页 Banner 底部的角色装饰带；关闭后不输出 DOM，也不会请求任何图片。
+			// 路径相对 src/assets，也支持 "/" 开头的 public 路径与远程 URL；顺序即从左到右。
+			enable: false,
+			// 单只高度上限由组件控制，宽度按各自宽高比自动得出。
+			items: [] as string[],
+		},
 	},
 	// Markdown 正文图片处理；仅匹配远程图片，不会产生额外网络请求或客户端代码。
 	imageOptimization: {

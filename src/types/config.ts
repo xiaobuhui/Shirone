@@ -107,6 +107,17 @@ export type SiteConfig = {
 		waves: {
 			enable: boolean;
 		};
+		/**
+		 * 首页 Banner 底部的角色装饰带。
+		 *
+		 * `enable: false` 时不输出 DOM、不请求图片（保持「零额外负担」）。
+		 * 只在首页出现，贴 Banner 底边、压在水波之上。
+		 */
+		characters: {
+			enable: boolean;
+			/** 图片路径列表，顺序即从左到右；相对 src/assets，也支持 "/" 开头的 public 路径与远程 URL。 */
+			items: string[];
+		};
 	};
 	/** Markdown 正文图片处理配置。 */
 	imageOptimization?: {
