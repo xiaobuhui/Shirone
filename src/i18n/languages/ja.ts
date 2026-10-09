@@ -19,6 +19,7 @@ export const ja: Translation = {
 	[Key.friendsCount]: "件の友達リンク",
 	[Key.friendsCounts]: "件の友達リンク",
 	[Key.friendsApply]: "申請",
+	[Key.friendsBack]: "フレンドへ戻る",
 
 	[Key.moments]: "モーメンツ",
 	[Key.momentsNoResults]: "条件に一致するモーメンツはありません",

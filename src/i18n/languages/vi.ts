@@ -19,6 +19,7 @@ export const vi: Translation = {
 	[Key.friendsCount]: "liên kết bạn bè",
 	[Key.friendsCounts]: "liên kết bạn bè",
 	[Key.friendsApply]: "Đăng ký",
+	[Key.friendsBack]: "Về trang bạn bè",
 
 	[Key.moments]: "Khoảnh khắc",
 	[Key.momentsNoResults]: "Không có khoảnh khắc nào khớp bộ lọc",

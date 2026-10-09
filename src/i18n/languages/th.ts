@@ -18,6 +18,7 @@ export const th: Translation = {
 	[Key.friendsCount]: "ลิงก์",
 	[Key.friendsCounts]: "ลิงก์",
 	[Key.friendsApply]: "สมัคร",
+	[Key.friendsBack]: "กลับไปหน้าเพื่อน",
 
 	[Key.moments]: "โมเมนต์",
 	[Key.momentsNoResults]: "ไม่มีโมเมนต์ที่ตรงกับตัวกรอง",

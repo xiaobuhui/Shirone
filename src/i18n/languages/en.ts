@@ -19,6 +19,7 @@ export const en: Translation = {
 	[Key.friendsCount]: "friend",
 	[Key.friendsCounts]: "friends",
 	[Key.friendsApply]: "Apply",
+	[Key.friendsBack]: "Back to friends",
 
 	[Key.moments]: "Moments",
 	[Key.momentsNoResults]: "No moments matched your filters",

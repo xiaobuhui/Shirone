@@ -20,6 +20,8 @@ enum I18nKey {
 	friendsCounts = "friendsCounts",
 	/** 友链页右上角按钮：进入「申请友链」页 */
 	friendsApply = "friendsApply",
+	/** 申请友链页的返回入口：回到友链页 */
+	friendsBack = "friendsBack",
 
 	moments = "moments",
 	momentsNoResults = "momentsNoResults",

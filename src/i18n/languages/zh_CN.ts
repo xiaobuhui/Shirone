@@ -18,6 +18,7 @@ export const zh_CN: Translation = {
 	[Key.friendsCount]: "个友链",
 	[Key.friendsCounts]: "个友链",
 	[Key.friendsApply]: "申请友链",
+	[Key.friendsBack]: "返回友链",
 
 	[Key.moments]: "动态",
 	[Key.momentsNoResults]: "没有符合条件的动态",

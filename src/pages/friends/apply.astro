@@ -7,10 +7,15 @@
  * 侧栏标识沿用 `friends`（不新增 SidebarPage 字面量）；内容缺失时抛错，与 about / wip 一致。
  */
 import { getEntry, render } from "astro:content";
+import Button from "@components/atoms/action/Button.svelte";
 import Card from "@components/atoms/display/Card.svelte";
 import Markdown from "@components/content/Markdown.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getMarkdownStylesheetAssets } from "@utils/markdown-assets";
+import { url } from "@utils/url-utils";
+import { Icon } from "astro-icon/components";
 
 const applyEntry = await getEntry("spec", "friends-apply");
 
@@ -38,6 +43,26 @@ const pageTitle = headings
     {markdownStylesheetAssets.map(({ pack, css }) => <style is:inline slot="head" data-swup-optional={pack} set:html={css}></style>)}
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
         <Card color="var(--card-bg)" radius="l" class="z-10 px-9 py-6 relative w-full">
+            <!-- 返回入口固定在卡片右上角，与友链页标题右侧的「申请友链」按钮左右对称 -->
+            <div class="flex justify-end">
+                <Button
+                    href={url("/friends/")}
+                    variant="tonal"
+                    size="small"
+                    radius="full"
+                    ariaLabel={i18n(I18nKey.friendsBack)}
+                >
+                    <span class="inline-flex items-center gap-2">
+                        <Icon
+                            name="material-symbols:arrow-back-rounded"
+                            class="text-lg"
+                            aria-hidden="true"
+                        />
+                        <span>{i18n(I18nKey.friendsBack)}</span>
+                    </span>
+                </Button>
+            </div>
+
             <Markdown class="mt-2">
                 <Content />
             </Markdown>

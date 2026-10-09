@@ -19,6 +19,7 @@ export const id: Translation = {
 	[Key.friendsCount]: "teman",
 	[Key.friendsCounts]: "teman",
 	[Key.friendsApply]: "Ajukan",
+	[Key.friendsBack]: "Kembali ke teman",
 
 	[Key.moments]: "Momen",
 	[Key.momentsNoResults]: "Tidak ada momen yang cocok dengan filter",
