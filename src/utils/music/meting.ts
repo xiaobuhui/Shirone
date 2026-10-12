@@ -41,6 +41,18 @@ export function buildMetingUrl(config: MetingMusicConfig): string | null {
 }
 
 /**
+ * 清洗 Meting 返回的封面地址。
+ * 平台侧缺专辑时，Meting 会回一个 id 为空的图片地址（形如 `?type=pic&id=`），
+ * 该地址请求必然 404；这里直接视同「没有封面」，让前端回退到默认封面。
+ */
+function normalizeMetingCover(value: string | undefined): string | undefined {
+	const url = (value ?? "").trim();
+	if (!url) return undefined;
+	const match = /[?&]id=([^&]*)/.exec(url);
+	return match && !match[1] ? undefined : url;
+}
+
+/**
  * 将 Meting API 单曲响应清洗并转换为标准的 TrackDescriptor。
  */
 export function parseMetingSong(
@@ -60,7 +72,7 @@ export function parseMetingSong(
 			: `meting-${server}-${index}-${Math.random().toString(36).slice(2, 8)}`;
 
 	const artist = (song.artist ?? song.author ?? "").trim() || undefined;
-	const cover = (song.pic ?? "").trim() || undefined;
+	const cover = normalizeMetingCover(song.pic);
 
 	let duration: number | undefined;
 	if (typeof song.duration === "number" && Number.isFinite(song.duration)) {

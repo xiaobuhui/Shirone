@@ -175,7 +175,7 @@ test.describe("music configuration and playlist helpers", () => {
 		});
 		expect(resolved).not.toBeNull();
 		expect(resolved?.playlist.length).toBeGreaterThan(0);
-		expect(resolved?.playlist[0].id).toBe("dazbee");
+		expect(resolved?.playlist[0].id).toBe("badapple");
 	});
 
 	test("resolves custom and meting provider configurations", () => {
