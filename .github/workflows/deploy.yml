@@ -1,0 +1,223 @@
+# 双仓部署：内容仓推送 / 代码仓合进 main → GitHub Actions 构建 → rsync 到自有服务器。
+#
+# 由主题自带的 deploy.yml.example 启用而来，相对模板改了三处：
+#   1. CONTENT_REPOSITORY 指到 xiaobuhui/shirone-content；
+#   2. 内容仓默认分支是 master（模板假设的是 main）；
+#   3. Deploy 这一步换成「自有服务器 rsync over SSH」变体：产物先传进带时间戳的
+#      release 目录，再原子切换 current 软链。切站是瞬时的，不会出现半截页面；
+#      回滚只需把软链指回上一个目录；旧 release 只留最近 KEEP_RELEASES 份控磁盘。
+#
+# 代码仓 Settings > Secrets and variables > Actions 需要配：
+#   DEPLOY_HOST         服务器 IP 或域名
+#   DEPLOY_USER         部署用户（专用 deploy，别用 root）
+#   DEPLOY_SSH_KEY      部署私钥（整段粘贴，含 BEGIN/END 行）
+#   DEPLOY_PORT         可选，SSH 端口，默认 22
+#   CONTENT_REPO_TOKEN  内容仓是私有仓，需要一个对内容仓有 Contents: Read 权限的令牌
+#   BILI_SESSDATA       可选，构建期同步 B 站番剧数据
+#
+# 服务器侧初始化步骤见内容仓「小不悔个人博客改造/部署说明.md」。
+
+name: Deploy
+
+on:
+  # 代码变更。workflow 文件自身被忽略，避免改流水线时白跑一次部署。
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "rules/**"
+      - "README*.md"
+      - "*.md"
+      - ".github/**"
+  # 内容仓推送后由 trigger-build.yml 发来的事件。
+  repository_dispatch:
+    types: [content-updated]
+  # 手动触发；回滚时把 content_ref 填成旧的内容 SHA。
+  workflow_dispatch:
+    inputs:
+      content_ref:
+        description: "内容仓 ref 或 commit SHA（留空使用 master）"
+        required: false
+        default: ""
+  # 兜底：repository_dispatch 事件偶尔会丢，每天重建一次保证最终一致。
+  schedule:
+    - cron: "17 4 * * *"
+
+# 同一时间只允许一个部署流水线运行：新请求自动取消旧构建，始终以最新提交为准。
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CONTENT_REPOSITORY: xiaobuhui/shirone-content
+  CONTENT_WORKING_COPY: .content-src
+  DEFAULT_CONTENT_REF: master
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
+      # 让 content:sync 走「本地目录」模式，内容由下面的 checkout 步骤取得。
+      CONTENT_DIR: .content-src
+
+    steps:
+      - name: Resolve content ref
+        id: target
+        # 经 env 传递而不是直接内插到脚本里：client_payload 属于外部输入，
+        # 直接内插会形成 shell 注入面。
+        env:
+          PAYLOAD_SHA: ${{ github.event.client_payload.sha }}
+          INPUT_REF: ${{ github.event.inputs.content_ref }}
+          DEFAULT_REF: ${{ env.DEFAULT_CONTENT_REF }}
+        run: |
+          set -euo pipefail
+          ref="${PAYLOAD_SHA:-}"
+          [ -n "$ref" ] || ref="${INPUT_REF:-}"
+          [ -n "$ref" ] || ref="$DEFAULT_REF"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "内容仓 ref：$ref"
+
+      - name: Checkout theme
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Checkout content
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ env.CONTENT_REPOSITORY }}
+          ref: ${{ steps.target.outputs.ref }}
+          path: ${{ env.CONTENT_WORKING_COPY }}
+          # 内容仓是私有仓，必须用有 Contents: Read 权限的令牌。
+          token: ${{ secrets.CONTENT_REPO_TOKEN }}
+          persist-credentials: false
+
+      - name: Record content commit
+        id: content
+        run: |
+          set -euo pipefail
+          echo "sha=$(git -C '${{ env.CONTENT_WORKING_COPY }}' rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 9.14.4
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Restore build caches
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          # 缩略图按源图内容哈希复用，因此跨 commit 的缓存命中是有效的。
+          path: |
+            .astro
+            node_modules/.astro
+            public/assets/moments/thumbnails
+          key: ${{ runner.os }}-shirone-${{ hashFiles('pnpm-lock.yaml', 'astro.config.mjs') }}-${{ steps.content.outputs.sha }}
+          restore-keys: |
+            ${{ runner.os }}-shirone-${{ hashFiles('pnpm-lock.yaml', 'astro.config.mjs') }}-
+            ${{ runner.os }}-shirone-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      # 独立成步，而不是依赖 `pnpm build` 内部再跑一次：
+      # 内容问题（含 config/*.yaml 的类型校验）与构建问题因此在日志里天然分开，
+      # 且 fonts:subset 需要内容与配置都已就位。
+      - name: Materialize content and config
+        run: pnpm content:sync
+
+      - name: Build site
+        run: pnpm build
+        env:
+          # 按需补齐可选功能的凭据。
+          BILI_SESSDATA: ${{ secrets.BILI_SESSDATA }}
+
+      - name: Check deploy secrets
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          [ -n "${DEPLOY_HOST:-}" ] || { echo "::error::缺少 Secret DEPLOY_HOST"; exit 1; }
+          [ -n "${DEPLOY_USER:-}" ] || { echo "::error::缺少 Secret DEPLOY_USER"; exit 1; }
+          [ -n "${DEPLOY_SSH_KEY:-}" ] || { echo "::error::缺少 Secret DEPLOY_SSH_KEY"; exit 1; }
+          echo "部署目标：$DEPLOY_USER@$DEPLOY_HOST"
+
+      - name: Deploy over SSH
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          # 改站点根目录或想多留几份 release，改这两行即可。
+          DEPLOY_ROOT: /www/shirone
+          KEEP_RELEASES: "5"
+        run: |
+          set -euo pipefail
+
+          port="${DEPLOY_PORT:-22}"
+          release="$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA:0:7}"
+          echo "RELEASE=$release" >> "$GITHUB_ENV"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$port" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          ssh_opts=(-i "$HOME/.ssh/deploy_key" -p "$port" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15)
+          remote="$DEPLOY_USER@$DEPLOY_HOST"
+          rsync_ssh="ssh -i $HOME/.ssh/deploy_key -p $port -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+
+          # 1) 先建新 release 目录再把产物整份传进去，全程不影响线上正在服务的那份。
+          ssh "${ssh_opts[@]}" "$remote" "mkdir -p '$DEPLOY_ROOT/releases/$release'"
+          rsync -az --delete --human-readable \
+            -e "$rsync_ssh" \
+            dist/ "$remote:$DEPLOY_ROOT/releases/$release/"
+
+          # 2) 原子切换软链，再清理超出保留份数的旧 release。
+          ssh "${ssh_opts[@]}" "$remote" "
+            set -euo pipefail
+            ln -sfn '$DEPLOY_ROOT/releases/$release' '$DEPLOY_ROOT/.current.new'
+            mv -Tf '$DEPLOY_ROOT/.current.new' '$DEPLOY_ROOT/current'
+            ls -1dt '$DEPLOY_ROOT'/releases/* | tail -n +$((KEEP_RELEASES + 1)) | xargs -r rm -rf
+            echo '--- current ---'
+            ls -ld '$DEPLOY_ROOT/current'
+            echo '--- 保留的 release（新 → 旧）---'
+            ls -1t '$DEPLOY_ROOT/releases'
+          "
+
+      - name: Summarize
+        if: always()
+        run: |
+          set -euo pipefail
+          {
+            echo "### Shirone deploy"
+            echo ""
+            echo "- 内容仓：\`${CONTENT_REPOSITORY}\`"
+            echo "- 内容 ref：\`${{ steps.target.outputs.ref }}\`"
+            echo "- 内容 commit：\`${{ steps.content.outputs.sha }}\`"
+            echo "- release：\`${RELEASE:-（构建未走到部署步骤）}\`"
+            if [ -f content.lock.json ]; then
+              echo ""
+              echo "<details><summary>content.lock.json</summary>"
+              echo ""
+              echo '```json'
+              cat content.lock.json
+              echo '```'
+              echo ""
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
