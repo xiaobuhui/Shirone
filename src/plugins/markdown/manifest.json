@@ -146,7 +146,7 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/markdown-abbreviations.md",
+				"src/content/posts/guides/markdown-suoxie.md",
 				"docs/markdown-extensions.md"
 			],
 			"tests": [
@@ -210,7 +210,7 @@
 					"viewport preloading or explicit activation: https://www.acfun.cn/player/{acid}"
 				]
 			},
-			"docs": ["src/content/posts/video.md"],
+			"docs": ["src/content/posts/examples/qianru-shipin.md"],
 			"tests": [
 				"tests/plugins/markdown/leaf/acfun.test.mjs",
 				"tests/site/markdown-runtime.spec.ts"
@@ -273,7 +273,7 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/admonitions.md",
+				"src/content/posts/guides/markdown-tishikuang.md",
 				"docs/markdown-extensions.md"
 			],
 			"tests": [
@@ -335,7 +335,7 @@
 					"author-declared video source; preload accepts none or auto"
 				]
 			},
-			"docs": ["src/content/posts/video.md"],
+			"docs": ["src/content/posts/examples/qianru-shipin.md"],
 			"tests": [
 				"tests/plugins/markdown/leaf/artplayer.test.mjs",
 				"tests/site/markdown-runtime.spec.ts"
@@ -389,7 +389,7 @@
 				]
 			},
 			"docs": [
-				"src/content/posts/audio-reader.md",
+				"src/content/posts/examples/yinpin-yueduqi.md",
 				".agents/skills/shirone-markdown-syntax/SKILL.md"
 			],
 			"tests": [
@@ -457,7 +457,7 @@
 					"viewport preloading or explicit activation: https://player.bilibili.com/player.html?bvid={bvid}&p={p}&high_quality=1&danmaku=0"
 				]
 			},
-			"docs": ["src/content/posts/video.md"],
+			"docs": ["src/content/posts/examples/qianru-shipin.md"],
 			"tests": [
 				"tests/plugins/markdown/leaf/bilibili.test.mjs",
 				"tests/site/markdown-runtime.spec.ts"
@@ -530,7 +530,7 @@
 				"modules": ["src/utils/code-tree.ts"],
 				"network": []
 			},
-			"docs": ["src/content/posts/markdown-enhancements.md"],
+			"docs": ["src/content/posts/examples/markdown-kuozhan-texing.md"],
 			"tests": [
 				"tests/plugins/markdown/containers/code-tree.test.mjs",
 				"tests/site/code-tree.spec.ts"
@@ -594,7 +594,7 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/collapse-panels.md",
+				"src/content/posts/guides/markdown-zhediemianban.md",
 				"docs/markdown-extensions.md"
 			],
 			"tests": [
@@ -643,7 +643,7 @@
 				"modules": [],
 				"network": []
 			},
-			"docs": ["src/content/posts/content-annotations.md"],
+			"docs": ["src/content/posts/guides/neirong-zhushi.md"],
 			"tests": [
 				"tests/plugins/markdown/inline/content-annotations.test.mjs",
 				"tests/site/content-annotations.spec.ts"
@@ -735,7 +735,7 @@
 				"modules": ["src/utils/code-copy.ts", "src/utils/code-collapse.ts"],
 				"network": []
 			},
-			"docs": ["src/content/posts/expressive-code.md"],
+			"docs": ["src/content/posts/examples/daimakuai.md"],
 			"tests": ["tests/site/post-encryption.spec.ts"],
 			"notes": ["元数据具体解析规则由 Expressive Code 及已注册插件定义。"]
 		},
@@ -757,7 +757,7 @@
 			"registeredIn": "src/utils/markdown-processor.mjs",
 			"styles": ["src/styles/markdown/fields.css"],
 			"runtime": {"mode": "none", "modules": [], "network": []},
-			"docs": ["src/content/posts/markdown-fields.md", "docs/markdown-extensions.md"],
+			"docs": ["src/content/posts/examples/markdown-ziduan-kapian.md", "docs/markdown-extensions.md"],
 			"tests": ["tests/plugins/markdown/containers/fields.test.mjs"],
 			"notes": ["无效或不完整的字段标签保留为可读 Markdown；组件为纯 SSR 输出，不增加客户端运行时。"]
 		},
@@ -811,7 +811,7 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/markdown-enhancements.md",
+				"src/content/posts/examples/markdown-kuozhan-texing.md",
 				"docs/markdown-extensions.md"
 			],
 			"tests": [
@@ -858,8 +858,8 @@
 				]
 			},
 			"docs": [
-				"src/content/posts/markdown-extended.md",
-				"src/content/posts/guide/index.md"
+				"src/content/posts/guides/kuozhan-yufa-zonglan.md",
+				"src/content/posts/guides/shiyong-zhinan/index.md"
 			],
 			"tests": [
 				"tests/plugins/markdown/leaf/github-card.test.mjs",
@@ -912,7 +912,7 @@
 				"modules": ["src/utils/fancybox-handler.ts"],
 				"network": ["author-declared image URLs only"]
 			},
-			"docs": ["src/content/posts/image-grid-demo/index.md"],
+			"docs": ["src/content/posts/examples/tupian-wangge/index.md"],
 			"tests": [
 				"tests/plugins/image-grid.test.mjs",
 				"tests/site/image-grid.spec.ts"
@@ -956,7 +956,7 @@
 				"network": ["author-declared image URLs only"]
 			},
 			"docs": [
-				"src/content/posts/spoilers.md",
+				"src/content/posts/guides/markdown-jutou.md",
 				"docs/markdown-extensions.md"
 			],
 			"tests": ["tests/plugins/rehype-markdown-images.test.mjs"],
@@ -1009,7 +1009,7 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/markdown-includes.md",
+				"src/content/posts/guides/markdown-pianduan-fuyong.md",
 				"docs/markdown-extensions.md"
 			],
 			"tests": ["tests/plugins/markdown/inline/includes.test.mjs"],
@@ -1058,7 +1058,7 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/marker-highlights.md",
+				"src/content/posts/guides/markdown-biaoji-gaoliang.md",
 				"docs/markdown-extensions.md"
 			],
 			"tests": [
@@ -1099,8 +1099,8 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/guide/index.md",
-				"src/content/posts/markdown.md"
+				"src/content/posts/guides/shiyong-zhinan/index.md",
+				"src/content/posts/examples/markdown-jichu.md"
 			],
 			"tests": [
 				"tests/plugins/markdown/katex-version.test.mjs",
@@ -1133,8 +1133,8 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/markdown-mermaid.md",
-				"src/content/posts/guide/index.md"
+				"src/content/posts/examples/mermaid-tubiaoji.md",
+				"src/content/posts/guides/shiyong-zhinan/index.md"
 			],
 			"tests": ["tests/site/mermaid.spec.ts"],
 			"notes": [
@@ -1187,7 +1187,7 @@
 				"network": []
 			},
 			"docs": [
-				"src/content/posts/option-groups.md",
+				"src/content/posts/guides/markdown-xuanxiangzu.md",
 				"docs/markdown-extensions.md"
 			],
 			"tests": [
@@ -1223,7 +1223,7 @@
 				"modules": ["src/utils/spoilers.ts"],
 				"network": []
 			},
-			"docs": ["src/content/posts/markdown-extended.md"],
+			"docs": ["src/content/posts/guides/kuozhan-yufa-zonglan.md"],
 			"tests": [
 				"tests/plugins/markdown/inline/spoilers.test.mjs",
 				"tests/site/spoilers.spec.ts"
@@ -1271,7 +1271,7 @@
 				"modules": [],
 				"network": []
 			},
-			"docs": ["src/content/posts/steps.md"],
+			"docs": ["src/content/posts/guides/markdown-buzhou.md"],
 			"tests": [
 				"tests/plugins/markdown/containers/steps.test.mjs",
 				"tests/site/steps.spec.ts"
@@ -1330,7 +1330,7 @@
 					"viewport preloading or explicit activation: https://www.youtube-nocookie.com/embed/{id}?rel=0&modestbranding=1"
 				]
 			},
-			"docs": ["src/content/posts/video.md"],
+			"docs": ["src/content/posts/examples/qianru-shipin.md"],
 			"tests": [
 				"tests/plugins/markdown/leaf/youtube.test.mjs",
 				"tests/site/markdown-runtime.spec.ts"

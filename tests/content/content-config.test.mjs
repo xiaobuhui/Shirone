@@ -200,7 +200,8 @@ describe("读取内容仓配置", () => {
 });
 
 describe("生成覆盖层模块", () => {
-	it("没有覆盖时与仓库里已提交的空模块完全一致", () => {
+	it("没有覆盖时与仓库里已提交的空模块完全一致", (t) => {
+		assert.equal(generateModule([]).source, EMPTY_MODULE);
 		const committed = readFileSync(
 			new URL(`../../${GENERATED_CONFIG_FILE}`, import.meta.url),
 			"utf8",
@@ -209,7 +210,9 @@ describe("生成覆盖层模块", () => {
 		// 比对前抹平换行：Windows 的 core.autocrlf 会把签出的文件变成 CRLF，
 		// 而生成器一律写 LF —— git 自己会归一化，这里也照做。
 		const normalize = (text) => text.split("\r\n").join("\n");
-		assert.equal(generateModule([]).source, EMPTY_MODULE);
+		// 内容分离后，真实站点的这个文件由内容仓配置生成（非空模块），
+		// 与空模块的一致性只在「零覆盖」状态（上游 / 未接内容仓）下成立。
+		if (normalize(committed) !== EMPTY_MODULE) t.skip("站点已接入真实配置覆盖层");
 		assert.equal(normalize(committed), EMPTY_MODULE);
 	});
 

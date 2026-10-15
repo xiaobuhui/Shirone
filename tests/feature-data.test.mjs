@@ -52,19 +52,29 @@ describe("Feature Data & Resolver Tests", () => {
 	});
 
 	it("resolveTimelineData applies disabledTitles and order correctly", () => {
-		// 当前数据仅一条：默认保留，禁用后为空
-		const all = resolveTimelineData({ enable: true, categories: [] });
-		assert.deepEqual(
-			all.map((t) => t.title),
-			["Shirone 主题 M3E 架构大改版"],
-		);
+		// 用自定义条目测逻辑，不绑定内容仓的真实数据（那条数据站主随时会增删）。
+		const items = [
+			{ title: "A", date: "2026-01-02" },
+			{ title: "B", date: "2026-01-01" },
+		];
 
+		// 默认 desc：源顺序即展示顺序
+		assert.deepEqual(
+			resolveTimelineData({ enable: true, categories: [] }, items).map((t) => t.title),
+			["A", "B"],
+		);
+		// asc：整体反转
+		assert.deepEqual(
+			resolveTimelineData({ enable: true, categories: [], order: "asc" }, items).map((t) => t.title),
+			["B", "A"],
+		);
+		// disabledTitles：按标题禁用后为空
 		const resolved = resolveTimelineData({
 			enable: true,
 			categories: [],
 			order: "asc",
-			disabledTitles: ["Shirone 主题 M3E 架构大改版"],
-		});
+			disabledTitles: ["A", "B"],
+		}, items);
 		assert.equal(resolved.length, 0);
 	});
 
