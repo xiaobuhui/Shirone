@@ -325,6 +325,7 @@ export default defineConfig({
 				"@panzoom/panzoom",
 				"overlayscrollbars",
 				"@fancyapps/ui",
+				"qrcode",
 			],
 		},
 		build: {

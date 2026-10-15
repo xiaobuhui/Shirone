@@ -303,6 +303,7 @@ export function shirones(options: ShironesOptions = {}): AstroIntegration {
 								"@panzoom/panzoom",
 								"overlayscrollbars",
 								"@fancyapps/ui",
+								"qrcode",
 							]),
 						},
 						build: {

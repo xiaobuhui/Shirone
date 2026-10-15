@@ -8,7 +8,7 @@ import { expect, test } from "@playwright/test";
  * 状态同步 URL（?group= / ?q=），刷新/分享/回退保留。
  * 分组标题与瓷砖均用站内既有语言（SectionTitle + card-bg 竖向卡），不引入额外装置。
  *
- * 数据来自 src/data/compass.ts（用户数据：11 组 / 88 条，内容仓 data/compass.ts 为源）。
+ * 数据来自 src/data/compass.ts（用户数据：12 组 / 89 条，内容仓 data/compass.ts 为源）。
  * 断言与内容仓 `data/compass.ts` 保持一致 —— 改数据后必须同步本文件。
  * 图标三态覆盖：本地图片（icon 为 "/images/compass/*.png"）、矢量（Iconify 名）、
  * 首字母兜底（全量数据里仅「常用工具 > Squoosh」一条，无 icon 也未配图片）。
@@ -16,6 +16,7 @@ import { expect, test } from "@playwright/test";
  */
 
 const SHELVES: { key: string; name: string; count: number }[] = [
+	{ key: "admin", name: "管理", count: 1 },
 	{ key: "dev", name: "项目管理", count: 5 },
 	{ key: "ai", name: "AI助手", count: 8 },
 	{ key: "ai-tools", name: "常用AI工具", count: 8 },
@@ -29,7 +30,7 @@ const SHELVES: { key: string; name: string; count: number }[] = [
 	{ key: "reads", name: "阅读", count: 3 },
 ];
 
-const ENTRY_COUNT = 88;
+const ENTRY_COUNT = 89;
 /** 除「笔记相关」外的其余分组 key，供筛选后断言「其余分组不渲染」 */
 const OTHER_KEYS = SHELVES.filter((s) => s.key !== "note").map((s) => s.key);
 
@@ -42,7 +43,7 @@ test.describe("站点罗盘页", () => {
 	test("渲染分组与瓷砖（SectionTitle 标题行 / 每组条数 / 外链 / 图标三态 / 计数行）", async ({
 		page,
 	}) => {
-		// 11 个分组 section，每组 tile 数与数据源一致；标题行为站内 SectionTitle
+		// 12 个分组 section，每组 tile 数与数据源一致；标题行为站内 SectionTitle
 		for (const shelf of SHELVES) {
 			await expect(
 				page.locator(`section[data-shelf="${shelf.key}"]`),
@@ -55,13 +56,15 @@ test.describe("站点罗盘页", () => {
 			).toHaveText(shelf.name);
 		}
 
-		// 首 tile（项目管理 > GitHub）：label / note / 外链 / 新标签页
+		// 首 tile（管理 > 网站统计）：label / note / 外链 / 新标签页
 		const first = page.locator(".compass-tile").first();
-		await expect(first.locator(".compass-tile__label")).toHaveText("GitHub");
-		await expect(first.locator(".compass-tile__note")).toHaveText("代码托管与协作");
+		await expect(first.locator(".compass-tile__label")).toHaveText("网站统计");
+		await expect(first.locator(".compass-tile__note")).toHaveText(
+			"站点访问数据统计分析",
+		);
 		await expect(first.locator("a.compass-tile__link")).toHaveAttribute(
 			"href",
-			"https://github.com",
+			"https://cloud.umami.is/share/JAclrBusAbZuzJtA",
 		);
 		await expect(first.locator("a.compass-tile__link")).toHaveAttribute(
 			"target",
@@ -97,7 +100,7 @@ test.describe("站点罗盘页", () => {
 
 		// 计数行（totalCount > 1 时渲染）
 		await expect(page.locator(".compass-section__count")).toHaveText(
-			"88 个站点",
+			"89 个站点",
 		);
 	});
 
