@@ -14,6 +14,12 @@ concurrency:
 permissions:
   contents: read
 
+# CI 里也要构建与做诊断，内容源来自私有内容仓，接入方式与 deploy.yml 保持一致。
+env:
+  CONTENT_REPOSITORY: xiaobuhui/shirone-content
+  CONTENT_WORKING_COPY: .content-src
+  DEFAULT_CONTENT_REF: master
+
 jobs:
   quality:
     name: Code quality
@@ -52,10 +58,21 @@ jobs:
     timeout-minutes: 15
     env:
       CI: true
+      CONTENT_DIR: .content-src
 
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Checkout content
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ env.CONTENT_REPOSITORY }}
+          ref: ${{ env.DEFAULT_CONTENT_REF }}
+          path: ${{ env.CONTENT_WORKING_COPY }}
+          # 内容仓是私有仓，必须用有 Contents: Read 权限的令牌（与 deploy.yml 共用同一个 secret）。
+          token: ${{ secrets.CONTENT_REPO_TOKEN }}
+          persist-credentials: false
 
       - name: Set up pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
@@ -72,6 +89,10 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # astro check 与内容集合相关，先把内容物化进来（deploy 的 build 自带同步，这里要手动）。
+      - name: Sync content
+        run: pnpm content:sync
 
       - name: Check Astro diagnostics
         run: pnpm exec astro check
@@ -92,10 +113,20 @@ jobs:
         node: [22, 24]
     env:
       CI: true
+      CONTENT_DIR: .content-src
 
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Checkout content
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ env.CONTENT_REPOSITORY }}
+          ref: ${{ env.DEFAULT_CONTENT_REF }}
+          path: ${{ env.CONTENT_WORKING_COPY }}
+          token: ${{ secrets.CONTENT_REPO_TOKEN }}
+          persist-credentials: false
 
       - name: Set up pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
